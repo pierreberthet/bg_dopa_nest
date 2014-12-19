@@ -327,6 +327,7 @@ if __name__ == '__main__':
     if params['record_spikes']:
         if counter == 0:
             if pc_id == 0:
+                binsize = params['binsize_histo_raster']
                 np.savetxt(params['actions_taken_fn'], actions)
                 np.savetxt(params['states_fn'], states)
                 np.savetxt(params['rewards_fn'], rewards)
@@ -347,7 +348,6 @@ if __name__ == '__main__':
 
                 pl.scatter(exc_sptimes, exc_spids,s=1.)
                 pl.xlim([0,params['t_sim']])
-                binsize = 10
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
                 rate_exc = c_exc*(1000./binsize)*(1./params['num_msn_d1'])
@@ -380,7 +380,6 @@ if __name__ == '__main__':
                 pl.subplot(211)
                 pl.scatter(exc_sptimes, exc_spids,s=1.)
                 pl.xlim([0,params['t_sim']])
-                binsize = 10
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
                 rate_exc = c_exc*(1000./binsize)*(1./params['num_rew_neurons'])
@@ -410,7 +409,6 @@ if __name__ == '__main__':
                 pl.subplot(211)
                 pl.scatter(exc_sptimes, exc_spids,s=1.)
                 pl.xlim([0,params['t_sim']])
-                binsize = 10
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
                 rate_exc = c_exc*(1000./binsize)*(1./params['num_neuron_states'])
@@ -440,7 +438,6 @@ if __name__ == '__main__':
                 pl.subplot(211)
                 pl.scatter(exc_sptimes, exc_spids,s=1.)
                 pl.xlim([0,params['t_sim']])
-                binsize = 10
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
                 rate_exc = c_exc*(1000./binsize)*(1./params['num_brainstem_neurons'])
@@ -470,7 +467,6 @@ if __name__ == '__main__':
                 pl.subplot(211)
                 pl.scatter(exc_sptimes, exc_spids,s=1.)
                 pl.xlim([0,params['t_sim']])
-                binsize = 10
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
                 rate_exc = c_exc*(1000./binsize)*(1./params['num_msn_d2'])
@@ -481,6 +477,35 @@ if __name__ == '__main__':
                 pl.savefig('fig11_D2firingrate.pdf')
             else:
                 comm.send(nest.GetStatus(BG.recorder_d2[0])[0]['events']['senders'],dest=0, tag=7)
+            if comm != None:
+                comm.barrier()
+#######################
+            if pc_id == 0:
+                exc_sptimes = nest.GetStatus(BG.recorder_rp[0])[0]['events']['times']
+                for i_proc in xrange(1,n_proc ):
+                    exc_sptimes = np.r_[exc_sptimes, comm.recv(source=i_proc, tag=10)]
+            else:
+                comm.send(nest.GetStatus(BG.recorder_rp[0])[0]['events']['times'],dest=0, tag=10)
+            if comm != None:
+                comm.barrier()
+            if pc_id == 0:
+                exc_spids = nest.GetStatus(BG.recorder_rp[0])[0]['events']['senders']
+                for i_proc in xrange(1, n_proc):
+                    exc_spids = np.r_[exc_spids, comm.recv(source=i_proc, tag = 11)]
+                pl.figure(316)
+                pl.subplot(211)
+                pl.scatter(exc_sptimes, exc_spids,s=1.)
+                pl.xlim([0,params['t_sim']])
+                bins=np.arange(0, params['t_sim']+1, binsize)
+                c_exc,b = np.histogram(exc_sptimes,bins=bins)
+                rate_exc = c_exc*(1000./binsize)*(1./params['num_brainstem_neurons'])
+                pl.subplot(212)
+                pl.plot(b[0:-1],rate_exc)
+                pl.xlim([0,params['t_sim']])
+                pl.title('firing rate of striosomes neurons')
+                pl.savefig('fig13_rp_firingrate.pdf')
+            else:
+                comm.send(nest.GetStatus(BG.recorder_rp[0])[0]['events']['senders'],dest=0, tag=11)
             if comm != None:
                 comm.barrier()
             #CC.get_weights(, BG)  implement in BG or utils

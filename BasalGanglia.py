@@ -262,7 +262,7 @@ class BasalGanglia(object):
                                   # ############  BCPNN CONNECTIONS ############ #
                                   # ############################################ #
 
-        nest.SetDefaults(self.params['dopa_bcpnn'], { 'vt': self.vt_dopa[0] } ) 
+        #nest.SetDefaults(self.params['dopa_bcpnn'], { 'vt': self.vt_dopa[0] } ) 
         #self.create_bcpnn_sensorimotor()
         #print 'VTDOPA : ', nest.GetStatus(self.vt_dopa)
        
@@ -273,6 +273,7 @@ class BasalGanglia(object):
         #       RP - REW // STRIOSOMES - DOPA     #
         # ####################################### #
         nest.CopyModel('bcpnn_dopamine_synapse',self.params['synapse_RP'], self.params['params_dopa_bcpnn_RP'] )
+        nest.SetDefaults(self.params['synapse_RP'], { 'vt': self.vt_dopa[0] } ) 
         #nest.CopyModel('bcpnn_synapse',self.params['synapse_RP'], self.params['params_bcpnn_RP'] )
         # Creates RP populations and the connections from states and actions to the corresponding RP populations
 
@@ -287,7 +288,9 @@ class BasalGanglia(object):
         #      STATES - ACTIONS // CORTEX - STRIATUM    #
         # ############################################# #
         nest.CopyModel('bcpnn_dopamine_synapse',self.params['synapse_d1'], self.params['params_dopa_bcpnn_d1'] )
+        nest.SetDefaults(self.params['synapse_d1'], { 'vt': self.vt_dopa[0] } ) 
         nest.CopyModel('bcpnn_dopamine_synapse',self.params['synapse_d2'], self.params['params_dopa_bcpnn_d2'] )
+        nest.SetDefaults(self.params['synapse_d2'], { 'vt': self.vt_dopa[0] } ) 
         print 'Geronimod1 ', self.comm.rank, 'params',nest.GetDefaults(self.params['synapse_d1'])
         print 'Geronimod2 ', self.comm.rank, 'params',nest.GetDefaults(self.params['synapse_d2'])
         for nstates in range(self.params['n_states']):
