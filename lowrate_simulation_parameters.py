@@ -70,7 +70,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['resolution'] = 250.
         # after this time the input stimulus will be transformed
         self.params['block_len'] = 10
-        self.params['n_blocks'] = 5
+        self.params['n_blocks'] = 4
         self.params['dt'] = .1                      # [ms] /default .1
         self.params['dt_input_mpn'] = 0.1           # [ms] time step for the inhomogenous Poisson process for input spike train generation
 
@@ -99,16 +99,16 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['tau_i'] = 5.
         self.params['tau_j'] = 6.
         self.params['tau_e'] = 40.
-        self.params['tau_p'] = 1000. #1000.
-        self.params['gain'] = 7. #2.5 ##1.9   #3.
-        self.params['gain_d1'] = 7. # 1. ##1.9   #3.
-        self.params['gain_d2'] = 7. # 1. ##1.9   #3.
-        self.params['gain_rp'] = -3.
-        self.params['gain_dopa'] = 5.  #5.   #4.
-        self.params['gain_neuron'] = 1.       #gain for the neuron model has different impact (amplifies current injected) than gain in synapse model (amplifies weights)
+        self.params['tau_p'] = 500. #1000.
+        self.params['gain'] = 1. #2.5 ##1.9   #3.
+        self.params['gain_d1'] = 12. # 1. ##1.9   #3.
+        self.params['gain_d2'] = 12. # 1. ##1.9   #3.
+        self.params['gain_rp'] = -4.
+        self.params['gain_dopa'] = 8.  #5.   #4.
+        self.params['gain_neuron'] = 30.       #gain for the neuron model has different impact (amplifies current injected) than gain in synapse model (amplifies weights)
         self.params['K'] = 0.
-        self.params['fmax'] = 100.  #70
-        self.params['rp_fmax'] = 80.   #self.params['fmax']
+        self.params['fmax'] = 20.  #70
+        self.params['rp_fmax'] = 15.   #self.params['fmax']
         self.params['Vth'] = -50.
         self.params['Cm'] = 250.
         self.params['Vreset'] = -75.
@@ -154,8 +154,8 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['num_actions_output'] = 10
         self.params['param_bg_output'] = {'V_reset': self.params['Vreset']} # to adapt parms to aif_cond_alpha neuron model
         
-        self.params['str_to_output_exc_w'] = 2.         ### D1
-        self.params['str_to_output_inh_w'] = -2.   #-1.     ### D2
+        self.params['str_to_output_exc_w'] = 1.         ### D1
+        self.params['str_to_output_inh_w'] = -1.   #-1.     ### D2
         self.params['str_to_output_exc_delay'] = 1. 
         self.params['str_to_output_inh_delay'] = 1.
         
@@ -164,7 +164,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         # RP and REWARD 
         # ========================
         self.params['model_rp_neuron'] = 'iaf_cond_alpha_bias'
-        self.params['num_rp_neurons'] = 15 #15
+        self.params['num_rp_neurons'] = 20 #15
         self.params['param_rp_neuron'] = {'V_th': self.params['Vth'], 'C_m': self.params['Cm'], 'kappa': self.params['K'] ,'fmax':self.params['fmax'], 'V_reset': self.params['Vreset'],
                 'tau_j': self.params['tau_j'],'tau_e': self.params['tau_e'],'tau_p':self.params['tau_p'], 'epsilon': self.params['epsilon'], 't_ref': 2.0, 'gain': self.params['gain_neuron']}
 
@@ -189,7 +189,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['p_j'] = np.random.random()/33.
         self.params['p_ij']= self.params['p_i'] * self.params['p_j']
         self.params['p_ij']= (np.random.random()/33.)*(np.random.random()/33.)
-       # print 'InitialP Pi', self.params['p_i'], 'pj',self.params['p_j'] , 'Pij', self.params['p_ij'] 
+        print 'InitialP Pi', self.params['p_i'], 'pj',self.params['p_j'] , 'Pij', self.params['p_ij'] 
        # self.params['p_i'] = self.params['t_selection'] / ( self.params['n_states']*self.params['t_iteration']  ) 
        # self.params['p_j'] = ( self.params['t_reward'] + self.params['t_efference'] ) / ( self.params['n_actions']*self.params['t_iteration']  )
        # self.params['p_ij']= self.params['p_i'] * self.params['p_j']
@@ -227,8 +227,8 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['params_lateral_synapse_d1'] = {}
         self.params['params_lateral_synapse_d2'] = {}
 
-        self.params['inhib_lateral_weights_d1'] = -4. #-4.
-        self.params['inhib_lateral_weights_d2'] = -4. #-4.
+        self.params['inhib_lateral_weights_d1'] = -2. #-4.
+        self.params['inhib_lateral_weights_d2'] = -3. #-4.
         self.params['inhib_lateral_weights_d2_d1'] = -1. #-4.
         self.params['inhib_lateral_delay_d1'] = 1.
         self.params['inhib_lateral_delay_d2'] = 1.
@@ -291,15 +291,15 @@ class global_parameters(ParameterContainer.ParameterContainer):
 
         self.params['num_neuron_poisson_efference'] = 1
         self.params['num_neuron_poisson_input_BG'] =1 
-        self.params['active_full_efference_rate'] = 2000.  #1800. #2000.#600.  #3000.
+        self.params['active_full_efference_rate'] = 900.  #1800. #2000.#600.  #3000.
         self.params['inactive_efference_rate'] = 1.
-        self.params['active_poisson_input_rate'] = 2000.  #1750.   #1900.  #2500.
-        self.params['inactive_poisson_input_rate'] = 1400. #1400.
+        self.params['active_poisson_input_rate'] = 1800.  #1750.   #1900.  #2500.
+        self.params['inactive_poisson_input_rate'] = 1300. #1400.
         self.params['supervisor_off'] = 0.
 
         self.params['active_poisson_rew_rate'] = 2700.
         self.params['baseline_poisson_rew_rate'] = 2500.
-        self.params['inactive_poisson_rew_rate'] = 2300.  #2300.
+        self.params['inactive_poisson_rew_rate'] = 2500.  #2300.
         
         #Initialisation####################
         self.params['initial_poisson_input_rate'] = 1.  #2500.
@@ -314,10 +314,10 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['delay_poisson_rew'] = 1.
         self.params['param_poisson_rew'] = {}# to adapt parms to aif_cond_alpha neuron model
 
-        self.params['weight_efference_strd1_exc'] = 4.      ## 4.
-        self.params['weight_efference_strd1_inh'] = -2.     ## -2.
-        self.params['weight_efference_strd2_exc'] = 4.
-        self.params['weight_efference_strd2_inh'] = -2.
+        self.params['weight_efference_strd1_exc'] = 2.      ## 4.
+        self.params['weight_efference_strd1_inh'] = -1.     ## -2.
+        self.params['weight_efference_strd2_exc'] = 2.
+        self.params['weight_efference_strd2_inh'] = -1.
         self.params['delay_efference_strd1_exc'] = 1.
         self.params['delay_efference_strd1_inh'] = 1.
         self.params['delay_efference_strd2_exc'] = 1.
@@ -326,12 +326,12 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['weight_poisson_input'] = 4.
         self.params['delay_poisson_input'] = 1.
         
-        self.params['num_neuron_states'] = 30
+        self.params['num_neuron_states'] = 100
         self.params['param_states_pop'] = {} 
 
-        self.params['weight_states_rp'] = 5.
+        self.params['weight_states_rp'] = 4.
         self.params['delay_states_rp'] =   self.params['t_efference']
-        self.params['weight_efference_rp'] = 5.
+        self.params['weight_efference_rp'] = 4.
         self.params['delay_efference_rp'] =  self.params['t_efference']
        # self.params['weight_actions_rp'] = 5.
        # self.params['delay_actions_rp'] =  self.params['t_efference']
@@ -341,7 +341,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         # ========================
         
 
-        self.params['dopa_b'] = -.064  #- .0697   ###.069 #-.085  #-1.4  #-0.13   # - (baseline rate dopa (= pop size * rate) )/ 1000
+        self.params['dopa_b'] = -.0735  #- .0697   ###.069 #-.085  #-1.4      #-0.13   # - (baseline rate dopa (= pop size * rate) )/ 1000
         self.params['weight'] = 5.
 
         self.params['dopa_bcpnn'] = 'bcpnn_dopamine_synapse'
@@ -367,15 +367,15 @@ class global_parameters(ParameterContainer.ParameterContainer):
             'sigmoid_mean':0.,
             'sigmoid_slope':1.,
             'n': .07, #17,
-            'p_i':   self.params['p_i'],    #.01,        #0.01,
-            'p_j':   self.params['p_j'],    #.01,       #0.01,
-            'p_ij':  self.params['p_ij'],   #.0001,     #0.0001,
+            'p_i': self.params['p_i'],   #0.01,
+            'p_j':  self.params['p_j'],  #0.01,
+            'p_ij':  self.params['p_ij'], #0.0001,
             'reverse':1., #1. 
             'tau_i':self.params['tau_i'],     #Primary trace presynaptic time constant
             'tau_j':self.params['tau_j'],      #Primary trace postsynaptic time constant
             'tau_e':self.params['tau_e'],      #Secondary trace time constant
             'tau_p':self.params['tau_p'],     #Tertiarty trace time constant
-            'tau_n':100.,    #default 100
+            'tau_n':300.,    #default 100
             #'type_id':'bcpnn_dopamine_synapse',
             'weight':self.params['weight'],
             'z_i':0.3,
@@ -403,12 +403,12 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['params_dopa_bcpnn_RP']['dopamine_modulated']= True
         self.params['params_dopa_bcpnn_RP']['p_i']= .01
         self.params['params_dopa_bcpnn_RP']['p_j']= .01
-        self.params['params_dopa_bcpnn_RP']['p_ij']=  .0001 #.0001051271096376 #.0001  Value to get an initial weight of 0.05
+        self.params['params_dopa_bcpnn_RP']['p_ij']=  .00011 #.0001051271096376 #.0001  Value to get an initial weight of 0.05
         self.params['params_dopa_bcpnn_RP']['k_pow']= 2.
         self.params['params_dopa_bcpnn_RP']['tau_i']= 5.
         self.params['params_dopa_bcpnn_RP']['tau_j']= 5.
-        self.params['params_dopa_bcpnn_RP']['tau_e']= 80.
-        self.params['params_dopa_bcpnn_RP']['tau_p']= 10000.
+        self.params['params_dopa_bcpnn_RP']['tau_e']= 20.
+        self.params['params_dopa_bcpnn_RP']['tau_p']= 1000.
         self.params['params_dopa_bcpnn_RP']['tau_n']= 100.
         self.params['params_dopa_bcpnn_RP']['fmax']= self.params['rp_fmax']
         self.params['params_dopa_bcpnn_RP']['gain_dopa']= 1.
@@ -469,13 +469,13 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['noise_delay_rp_exc']= 1.
         self.params['noise_delay_rp_inh']= 1.
         self.params['noise_delay_str_exc']= 1.
-        self.params['noise_rate_d1_exc']=3000.  #3000.  #5500. 
+        self.params['noise_rate_d1_exc']=5100.  #3000.  #5500. 
         self.params['noise_rate_d1_inh']=1000.
-        self.params['noise_rate_d2_exc']=3000.  #3000. #5500.
+        self.params['noise_rate_d2_exc']=5100.  #3000. #5500.
         self.params['noise_rate_d2_inh']=1000.
-        self.params['noise_rate_actions_exc']=3600.  #3600.
+        self.params['noise_rate_actions_exc']=3650.  #3600.
         self.params['noise_rate_actions_inh']=1200.  #1000.
-        self.params['noise_rate_str_exc']=1000. #1000. 
+        self.params['noise_rate_str_exc']=1200. #1000. 
         self.params['noise_rate_rp_exc']=2000.  
         self.params['noise_rate_rp_inh']=1000.  
 
