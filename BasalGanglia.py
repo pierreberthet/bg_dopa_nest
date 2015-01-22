@@ -190,8 +190,8 @@ class BasalGanglia(object):
                 if other != nactions:
                     #nest.DivergentConnect(self.strD1[nactions], self.strD1[other], model=self.params['lateral_synapse_d1']  )
                     #nest.DivergentConnect(self.strD2[nactions], self.strD2[other], model=self.params['lateral_synapse_d2']  )
-                    nest.RandomDivergentConnect(self.strD1[nactions], self.strD1[other], int(self.params['num_msn_d1']/4.) , weight = self.params['inhib_lateral_weights_d1'], delay= self.params['inhib_lateral_delay_d1'])
-                    nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/4.), weight = self.params['inhib_lateral_weights_d2'], delay= self.params['inhib_lateral_delay_d2'])
+                    nest.RandomDivergentConnect(self.strD1[nactions], self.strD1[other], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1']) , weight = self.params['inhib_lateral_weights_d1'], delay= self.params['inhib_lateral_delay_d1'])
+                    nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2']), weight = self.params['inhib_lateral_weights_d2'], delay= self.params['inhib_lateral_delay_d2'])
                 
                 #nest.RandomDivergentConnect(self.strD2[nactions], self.strD1[nactions], int(self.params['num_msn_d1']/4.), weight = self.params['inhib_lateral_weights_d2_d1'], delay= self.params['inhib_lateral_delay_d2'])
         
@@ -241,10 +241,11 @@ class BasalGanglia(object):
         # STRIATUM / ACTIONS  #
         # ################### #
         for nactions in xrange(self.params['n_actions']):
-            for neuron in self.actions[nactions]:
-                nest.ConvergentConnect(self.strD1[nactions], [neuron], weight=self.params['str_to_output_exc_w'], delay=self.params['str_to_output_exc_delay']) 
-                nest.ConvergentConnect(self.strD2[nactions], [neuron], weight=self.params['str_to_output_inh_w'], delay=self.params['str_to_output_inh_delay'])	
-                            
+            nest.ConvergentConnect(self.strD1[nactions], self.actions[nactions], weight=self.params['str_to_output_inh_w'], delay=self.params['str_to_output_inh_delay']) 
+            nest.ConvergentConnect(self.strD2[nactions], self.actions[nactions], weight=self.params['str_to_output_exc_w'], delay=self.params['str_to_output_exc_delay'])	
+            # for neuron in self.actions[nactions]:
+            #     nest.ConvergentConnect(self.strD1[nactions], [neuron], weight=self.params['str_to_output_inh_w'], delay=self.params['str_to_output_inh_delay']) 
+            #     nest.ConvergentConnect(self.strD2[nactions], [neuron], weight=self.params['str_to_output_exc_w'], delay=self.params['str_to_output_exc_delay'])	
         # ################### #
         #   EFFERENCE / STR   #
         # ################### #
@@ -308,10 +309,14 @@ class BasalGanglia(object):
             
         connectiond1 = nest.GetConnections(target = [self.strD1[0][0]])
         connectiond2 = nest.GetConnections(target = [self.strD2[0][0]])
-        print 'GETCONNECT neuron 1'
-        pp.pprint(nest.GetStatus(connectiond1))
-        print 'GETCONNECT neuron 2'
-        pp.pprint(nest.GetStatus(connectiond2))
+        self.comm.barrier()
+        if self.pc_id ==1:
+            print 'GETCONNECT neuron 1'
+            pp.pprint(nest.GetConnections(target= self.strD1[0]))
+           # pp.pprint(nest.GetStatus(connectiond1))
+           # print 'GETCONNECT neuron 2'
+           # pp.pprint(nest.GetStatus(connectiond2))
+        self.comm.barrier()
         
 
         # ####################
@@ -374,11 +379,15 @@ class BasalGanglia(object):
         """
         self.brainstem = {}
         self.recorder_brainstem = {}
+        self.noise_bs_exc = nest.Create('poisson_generator',1) 
+        self.noise_bs_inh = nest.Create('poisson_generator',1) 
         for i in xrange(self.params['n_actions']):
             self.brainstem[i] = nest.Create( self.params['model_brainstem_neuron'], self.params['num_brainstem_neurons'], params= self.params['param_brainstem_neuron'] )
             self.recorder_brainstem[i] = nest.Create("spike_detector", params= self.params['spike_detector_brainstem'])
             nest.SetStatus(self.recorder_brainstem[i],[{"to_file": True, "withtime": True, 'label' : self.params['brainstem_spikes_fn'] + str(i)}])
             nest.ConvergentConnect(self.brainstem[i], self.recorder_brainstem[i])
+            nest.DivergentConnect(self.noise_bs_exc, self.brainstem[i], weight=self.params['noise_weight_bs_exc'], delay=self.params['noise_delay_bs_exc'])
+            nest.DivergentConnect(self.noise_bs_inh, self.brainstem[i], weight=self.params['noise_weight_bs_inh'], delay=self.params['noise_delay_bs_inh'])
  
         print "Brainstem output created"
 
@@ -499,8 +508,8 @@ class BasalGanglia(object):
             print '*******no spikes*******'
             winning_action = utils.communicate_action(self.comm, self.params['n_actions'])
         else:    
-            print 'gids_spiked ', gids_spiked
-            print 'nspikes ', nspikes
+            #print 'gids_spiked ', gids_spiked
+            #print 'nspikes ', nspikes
             all_actions_gids = np.arange(self.first_action_gid, self.last_action_gid)
             all_spikes = np.zeros(self.last_action_gid-self.first_action_gid)
             for gid in gids_spiked:
@@ -508,28 +517,32 @@ class BasalGanglia(object):
         #    results = np.histogram(gids_spiked, bins=self.params['n_actions'], weights = nspikes)
         #    print 'results_histo_1 ', results
             results = np.histogram(all_actions_gids, bins=self.params['n_actions'], weights = all_spikes)
-        #    print 'results_histo_2 ', results
-            #winning_nspikes = np.argmax(nspikes)
+            #print 'results_histo_2 ', results
+           # winning_nspikes = np.argmax(nspikes)
             randm = 0.
             winning_action = 0
             if self.params['softmax']:
                 if self.comm.rank ==0:
                     randm = np.random.random()
-            randm = self.comm.bcast(randm, root=0)
-            self.comm.barrier()
-            softmax = results[0]
-            softmax = np.exp(self.params['temperature']*softmax) 
-            softmax = softmax / np.sum(softmax)
-            #print 'softmax ', softmax
-            for i in xrange(1,self.params['n_actions']):
-                softmax[i] += softmax[i-1]
-                if randm >= softmax[i-1]:
-                    winning_action = int(i)
+                randm = self.comm.bcast(randm, root=0)
+                self.comm.barrier()
+                softmax = results[0]
+                #print 'softmax_0', softmax
+                softmax = softmax / np.sum(softmax)
+                #print 'softmax_1', softmax
+                softmax= 1. - softmax   #we want to select the action coded by the least active GPi/SNr population
+                softmax = np.exp(self.params['temperature']*softmax) 
+                softmax = softmax / np.sum(softmax)
+                #print 'softmax_2', softmax
+                for i in xrange(1,self.params['n_actions']):
+                    softmax[i] += softmax[i-1]
+                    if randm >= softmax[i-1]:
+                        winning_action = int(i)
             else:
                 #winning_gid = gids_spiked[winning_nspikes]
                 #print 'winning gid: ', winning_gid
                 #winning_action = self.recorder_output_gidkey[winning_gid+1]
-                winning_action = np.argmax(results[0])
+                winning_action = np.argmin(results[0])
         print 'BG says (it %d, pc_id %d): do action %d' % (self.t_current / self.params['t_iteration'], self.pc_id, winning_action)
         self.t_current += self.params['t_iteration']
         return (winning_action)
@@ -560,6 +573,8 @@ class BasalGanglia(object):
         nest.SetStatus(self.noise_actions_inh, {'rate': self.params['noise_rate_actions_inh']}) 
         nest.SetStatus(self.noise_rp_exc, {'rate': self.params['noise_rate_rp_exc']}) 
         nest.SetStatus(self.noise_rp_inh, {'rate': self.params['noise_rate_rp_inh']}) 
+        nest.SetStatus(self.noise_bs_exc, {'rate': self.params['noise_rate_bs_exc']}) 
+        nest.SetStatus(self.noise_bs_inh, {'rate': self.params['noise_rate_bs_inh']}) 
 
 
 

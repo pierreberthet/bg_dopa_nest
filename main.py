@@ -198,7 +198,7 @@ if __name__ == '__main__':
     block = 0
     BG.set_noise()
     BG.baseline_reward()
-    BG.set_gain(params['gain'])
+    BG.set_gain(0.)
     BG.set_init()
     if comm != None:
         comm.barrier()
@@ -207,6 +207,7 @@ if __name__ == '__main__':
     else:
         dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest.Simulate(params['t_init'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp,comm)
 
+    BG.set_gain(params['gain'])
     BG.set_noise()
     BG.stop_efference()
 #####   ###################         ###############
