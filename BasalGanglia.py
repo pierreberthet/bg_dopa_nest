@@ -190,8 +190,9 @@ class BasalGanglia(object):
                 if other != nactions:
                     #nest.DivergentConnect(self.strD1[nactions], self.strD1[other], model=self.params['lateral_synapse_d1']  )
                     #nest.DivergentConnect(self.strD2[nactions], self.strD2[other], model=self.params['lateral_synapse_d2']  )
-                    nest.RandomDivergentConnect(self.strD1[nactions], self.strD1[other], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1']) , weight = self.params['inhib_lateral_weights_d1'], delay= self.params['inhib_lateral_delay_d1'])
-                    nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2']), weight = self.params['inhib_lateral_weights_d2'], delay= self.params['inhib_lateral_delay_d2'])
+                    nest.RandomDivergentConnect(self.strD1[nactions], self.strD1[other], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1']) , weight = np.round(np.random.normal(self.params['inhib_lateral_weights_d1'], self.params['std_inhib_lateral_weights_d1'], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1'])),1).tolist(), delay= np.round(np.random.normal(self.params['inhib_lateral_delay_d1'],self.params['std_inhib_lateral_delay_d1'], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1'])),1).tolist() )
+                    nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2']) , weight = np.round(np.random.normal(self.params['inhib_lateral_weights_d2'], self.params['std_inhib_lateral_weights_d2'], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2'])),1).tolist(), delay= np.round(np.random.normal(self.params['inhib_lateral_delay_d2'],self.params['std_inhib_lateral_delay_d2'], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2'])),1).tolist() )
+                    #nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2']), weight = self.params['inhib_lateral_weights_d2'], delay= self.params['inhib_lateral_delay_d2'])
                 
                 #nest.RandomDivergentConnect(self.strD2[nactions], self.strD1[nactions], int(self.params['num_msn_d1']/4.), weight = self.params['inhib_lateral_weights_d2_d1'], delay= self.params['inhib_lateral_delay_d2'])
         
@@ -232,17 +233,17 @@ class BasalGanglia(object):
             for iaction in range(self.params['n_actions']):
                # nest.SetDefaults( self.params['dopa_bcpnn'], params= self.params['params_dopa_bcpnn_actions_rp'])
                 #nest.DivergentConnect(self.strD1[iaction], self.rp[iaction+istate*self.params['n_actions']], weight=self.params['weight_actions_rp'], delay=self.params['delay_actions_rp'])
-                nest.DivergentConnect(self.efference_copy[iaction], self.rp[iaction+istate*self.params['n_actions']], weight=self.params['weight_efference_rp'], delay=self.params['delay_efference_rp'])
+                nest.DivergentConnect(self.efference_copy[iaction], self.rp[iaction+istate*self.params['n_actions']], weight=np.round(np.random.normal(self.params['weight_efference_rp'], self.params['std_weight_efference_rp'], self.params['num_rp_neurons']), 1).tolist(), delay=np.round(np.random.normal(self.params['delay_efference_rp'], self.params['std_delay_efference_rp'], self.params['num_rp_neurons']), 1).tolist())
                # print 'DATADATA',  nest.GetStatus(nest.GetConnections(self.actions[iaction], self.rp[iaction+istate*self.params['n_actions']]))        
                # nest.SetDefaults( self.params['dopa_bcpnn'], params= self.params['params_dopa_bcpnn_states_rp'])
-                nest.DivergentConnect(self.states[istate], self.rp[iaction + istate*self.params['n_actions']], weight=self.params['weight_states_rp'], delay=self.params['delay_states_rp'] )
+                nest.DivergentConnect(self.states[istate], self.rp[iaction + istate*self.params['n_actions']], weight=np.round(np.random.normal(self.params['weight_states_rp'], self.params['std_weight_states_rp'],self.params['num_rp_neurons']), 1).tolist(), delay=np.round(np.random.normal(self.params['delay_states_rp'],self.params['std_delay_states_rp'],self.params['num_rp_neurons']), 1 ).tolist())
         
         # ################### #
         # STRIATUM / ACTIONS  #
         # ################### #
         for nactions in xrange(self.params['n_actions']):
-            nest.ConvergentConnect(self.strD1[nactions], self.actions[nactions], weight=self.params['str_to_output_inh_w'], delay=self.params['str_to_output_inh_delay']) 
-            nest.ConvergentConnect(self.strD2[nactions], self.actions[nactions], weight=self.params['str_to_output_exc_w'], delay=self.params['str_to_output_exc_delay'])	
+            nest.ConvergentConnect(self.strD1[nactions], self.actions[nactions], weight=np.round(np.random.normal(self.params['str_to_output_inh_w'],self.params['std_str_to_output_inh_w'],self.params['num_msn_d1']),1).tolist(), delay=np.round(np.random.normal(self.params['str_to_output_inh_delay'],self.params['std_str_to_output_inh_delay'], self.params['num_msn_d1']),1).tolist()) 
+            nest.ConvergentConnect(self.strD2[nactions], self.actions[nactions], weight=np.round(np.random.normal(self.params['str_to_output_exc_w'],self.params['std_str_to_output_inh_w'],self.params['num_msn_d2']),1).tolist(), delay=np.round(np.random.normal(self.params['str_to_output_exc_delay'],self.params['std_str_to_output_exc_delay'], self.params['num_msn_d2']),1).tolist())	
             # for neuron in self.actions[nactions]:
             #     nest.ConvergentConnect(self.strD1[nactions], [neuron], weight=self.params['str_to_output_inh_w'], delay=self.params['str_to_output_inh_delay']) 
             #     nest.ConvergentConnect(self.strD2[nactions], [neuron], weight=self.params['str_to_output_exc_w'], delay=self.params['str_to_output_exc_delay'])	
@@ -252,10 +253,11 @@ class BasalGanglia(object):
         for nactions in xrange(self.params['n_actions']):
             for i in xrange(self.params['n_actions']):
                  if i != nactions:
-                     nest.DivergentConnect(self.efference_copy[nactions], self.strD1[i], weight=self.params['weight_efference_strd1_inh'], delay=self.params['delay_efference_strd1_inh'])
-                     nest.DivergentConnect(self.efference_copy[nactions], self.strD2[i], weight=self.params['weight_efference_strd2_inh'], delay=self.params['delay_efference_strd2_inh'])
-            nest.DivergentConnect(self.efference_copy[nactions], self.strD1[nactions], weight=self.params['weight_efference_strd1_exc'], delay=self.params['delay_efference_strd1_exc'])
-            nest.DivergentConnect(self.efference_copy[nactions], self.strD2[nactions], weight=self.params['weight_efference_strd2_exc'], delay=self.params['delay_efference_strd2_exc'])
+                     nest.DivergentConnect(self.efference_copy[nactions], self.strD1[i], weight=np.round(np.random.normal(self.params['weight_efference_strd1_inh'],self.params['std_weight_efference_strd1_inh'], self.params['num_msn_d1']),1).tolist(), delay=np.round(np.random.normal(self.params['delay_efference_strd1_inh'],self.params['std_delay_efference_strd1_inh'], self.params['num_msn_d1']),1).tolist() )
+                     nest.DivergentConnect(self.efference_copy[nactions], self.strD2[i], weight=np.round(np.random.normal(self.params['weight_efference_strd2_inh'],self.params['std_weight_efference_strd2_inh'], self.params['num_msn_d2']),1).tolist(), delay=np.round(np.random.normal(self.params['delay_efference_strd2_inh'],self.params['std_delay_efference_strd2_inh'], self.params['num_msn_d2']),1).tolist() )
+                     #nest.DivergentConnect(self.efference_copy[nactions], self.strD2[i], weight=self.params['weight_efference_strd2_inh'], delay=self.params['delay_efference_strd2_inh'])
+            nest.DivergentConnect(self.efference_copy[nactions], self.strD1[nactions], weight=np.round(np.random.normal(self.params['weight_efference_strd1_exc'],self.params['std_weight_efference_strd1_exc'], self.params['num_msn_d1']),1).tolist(), delay=np.round(np.random.normal(self.params['delay_efference_strd1_exc'], self.params['std_delay_efference_strd1_exc'], self.params['num_msn_d1']),1).tolist())
+            nest.DivergentConnect(self.efference_copy[nactions], self.strD2[nactions], weight=np.round(np.random.normal(self.params['weight_efference_strd2_exc'],self.params['std_weight_efference_strd2_exc'], self.params['num_msn_d2']),1).tolist(), delay=np.round(np.random.normal(self.params['delay_efference_strd2_exc'], self.params['std_delay_efference_strd2_exc'], self.params['num_msn_d2']),1).tolist())
 
 
 
@@ -280,6 +282,16 @@ class BasalGanglia(object):
 
         for index_rp in xrange(self.params['n_actions'] * self.params['n_states']):
             nest.DivergentConnect( self.rp[index_rp], self.rew, model = self.params['synapse_RP']  )
+            conn = nest.GetConnections(source=self.rp[index_rp], target=self.rew, synapse_model=self.params['synapse_RP'])
+            delay_params = [{'delay':np.round(np.random.normal(self.params['delay_rp'], self.params['std_delay_rp']),1)} for c in conn]
+            nest.SetStatus(conn, delay_params)
+            pi_params = [{'p_i':max(self.params['positive_prior'], np.round(np.random.normal(self.params['p_i_rp'], self.params['std_p_i_rp']),1))} for c in conn]
+            pj_params = [{'p_j':max(self.params['positive_prior'], np.round(np.random.normal(self.params['p_j_rp'], self.params['std_p_j_rp']),1))} for c in conn]
+            #pij_params = [{'p_ij':max(self.params['positive_prior']*self.params['positive_prior']+self.params['positive_prior'], np.round(np.random.normal(self.params['p_ij_rp'], self.params['std_p_ij_rp']),1))} for c in conn]
+            pij_params = [{'p_ij':max(self.params['epsilon'], np.round(np.random.normal(self.params['p_ij_rp'], self.params['std_p_ij_rp']),1))} for c in conn]
+            nest.SetStatus(conn, pi_params)
+            nest.SetStatus(conn, pj_params)
+            nest.SetStatus(conn, pij_params)
        # nodes_info = nest.GetStatus( nest.GetConnections(self.rp, self.rew))
        # local_nodes = [(ni['global_id'], ni['vp']) for ni in nodes_info if ni['local']]
        # for gid, vp in local_nodes:
@@ -296,19 +308,33 @@ class BasalGanglia(object):
         print 'Geronimod2 ', self.comm.rank, 'params',nest.GetDefaults(self.params['synapse_d2'])
         for nstates in range(self.params['n_states']):
             for nactions in range(self.params['n_actions']):
+                # D1
                 #nest.SetDefaults(self.params['dopa_bcpnn'], params=self.params['params_dopa_bcpnn_d1'])
                 nest.DivergentConnect(self.states[nstates], self.strD1[nactions], model=self.params['synapse_d1'])
+                conn = nest.GetConnections(source=self.states[nstates], target=self.strD1[nactions], synapse_model=self.params['synapse_d1'])
+                delay_params = [{'delay':np.round(np.random.normal(self.params['delay_d1'], self.params['std_delay_d1']),1)} for c in conn]
+                nest.SetStatus(conn, delay_params)
+                pi_params = [{'p_i':max(self.params['epsilon'], np.round(np.random.normal(self.params['p_i_d1'], self.params['std_p_i_d1']),1))} for c in conn]
+                pj_params = [{'p_j':max(self.params['epsilon'], np.round(np.random.normal(self.params['p_j_d1'], self.params['std_p_j_d1']),1))} for c in conn]
+                pij_params = [{'p_ij':max(self.params['positive_prior']*self.params['positive_prior']+self.params['positive_prior'], np.round(np.random.normal(self.params['p_ij_d1'], self.params['std_p_ij_d1']),1))} for c in conn]
+                nest.SetStatus(conn, pi_params)
+                nest.SetStatus(conn, pj_params)
+                nest.SetStatus(conn, pij_params)
+                # D2
                 #nest.SetDefaults(self.params['dopa_bcpnn'], params=self.params['params_dopa_bcpnn_d2'])
                 nest.DivergentConnect(self.states[nstates], self.strD2[nactions], model=self.params['synapse_d2'])
-                # Normal distribution of P traces
-               # nest.SetStatus(nest.GetConnections(self.states[nstates], self.strD1[nactions]), {'p_i': pyrngs[vp].normal(self.params['p_i'], self.params['p_i_std']), 'p_j': pyrngs[vp].normal(self.params['p_j'], self.params['p_j_std']), 'p_ij': pyrngs[vp].normal(self.params['p_ij'], self.params['p_ij_std'])})
-                #nodes_info = nest.GetStatus(nest.GetConnections(self.states[nstates], self.strD2[nactions]))
-                #local_nodes = [(ni['global_id'], ni['vp']) for ni in nodes_info if ni['local']]
-                #for gid, vp in local_nodes:
-               # nest.SetStatus(nest.GetConnections(self.states[nstates], self.strD2[nactions]), {'p_i': pyrngs[vp].normal(self.params['p_i'], self.params['p_i_std']), 'p_j': pyrngs[vp].normal(self.params['p_j'], self.params['p_j_std']), 'p_ij': pyrngs[vp].normal(self.params['p_ij'], self.params['p_ij_std'])})
+                conn = nest.GetConnections(source=self.states[nstates], target=self.strD2[nactions], synapse_model=self.params['synapse_d2'])
+                delay_params = [{'delay':np.round(np.random.normal(self.params['delay_d2'], self.params['std_delay_d2']),1)} for c in conn]
+                nest.SetStatus(conn, delay_params)
+                pi_params = [{'p_i':max(self.params['epsilon'],np.round(np.random.normal(self.params['p_i_d2'], self.params['std_p_i_d2']),1))} for c in conn]
+                pj_params = [{'p_j':max(self.params['epsilon'],np.round(np.random.normal(self.params['p_j_d2'], self.params['std_p_j_d2']),1))} for c in conn]
+                pij_params = [{'p_ij':max(self.params['positive_prior']*self.params['positive_prior']+self.params['positive_prior'], np.round(np.random.normal(self.params['p_ij_d2'], self.params['std_p_ij_d2']),1))} for c in conn]
+                nest.SetStatus(conn, pi_params)
+                nest.SetStatus(conn, pj_params)
+                nest.SetStatus(conn, pij_params)
             
-        connectiond1 = nest.GetConnections(target = [self.strD1[0][0]])
-        connectiond2 = nest.GetConnections(target = [self.strD2[0][0]])
+        #connectiond1 = nest.GetConnections(target = [self.strD1[0][0]])
+        #connectiond2 = nest.GetConnections(target = [self.strD2[0][0]])
         self.comm.barrier()
         if self.pc_id ==1:
             print 'GETCONNECT neuron 1'
@@ -422,18 +448,18 @@ class BasalGanglia(object):
             nest.SetStatus(self.efference_copy[nactions], {'rate' : self.params['inactive_efference_rate']})
         #    print 'debug: EFFERENCE OFF for ACTION', nactions  , 'activity is: ',nest.GetStatus(self.efference_copy[nactions])[0]['rate'] 
         nest.SetStatus(self.efference_copy[action], {'rate' : self.params['active_full_efference_rate']})
-       # print 'debug: EFFERENCE SET for ACTION',action ,' activity is: ',nest.GetStatus(self.efference_copy[action])[0]['rate'] 
+        print 'debug: EFFERENCE SET for ACTION',action ,' activity is: ',nest.GetStatus(self.efference_copy[action])[0]['rate'] 
         
     def stop_efference(self):
         for nactions in xrange(self.params['n_actions']):
             nest.SetStatus(self.efference_copy[nactions], {'rate' : self.params['inactive_efference_rate']})
-            print 'debug: EFFERENCE OFF, activity is: ',nest.GetStatus(self.efference_copy[nactions])[0]['rate'] 
+            #print 'debug: EFFERENCE OFF, activity is: ',nest.GetStatus(self.efference_copy[nactions])[0]['rate'] 
     
     
     
     def set_rp(self, state, action, gain, kappa):
         if self.params['params_dopa_bcpnn_RP']['dopamine_modulated']:
-            nest.SetStatus(nest.GetConnections( self.rp[ action + state*self.params['n_actions'] ], self.rew ),{'gain':gain})
+            nest.SetStatus(nest.GetConnections( self.rp[ action + state*self.params['n_actions'] ], self.rew ),{'gain':gain*self.params['gain_rp']})
         else:
             nest.SetStatus(nest.GetConnections( self.rp[ action + state*self.params['n_actions'] ], self.rew ),{'gain':gain, 'K':kappa})
 
@@ -593,10 +619,10 @@ class BasalGanglia(object):
        for nstate in range(self.params['n_states']):
            for naction in range(self.params['n_actions']):
                # pp.pprint(nest.GetStatus(nest.GetConnections(self.states[nstate], self.strD1[naction], self.params['synapse_d1'])))
-               nest.SetStatus(self.strD1[naction], {'gain':gain*self.params['gain_neuron']})
-               nest.SetStatus(self.strD2[naction], {'gain':gain*self.params['gain_neuron']})
-               nest.SetStatus(nest.GetConnections(self.states[nstate], self.strD1[naction], self.params['synapse_d1']), {'gain':gain})
-               nest.SetStatus(nest.GetConnections(self.states[nstate], self.strD2[naction]), {'gain':gain})
+              # nest.SetStatus(self.strD1[naction], {'gain':gain*self.params['gain_neuron']})
+              # nest.SetStatus(self.strD2[naction], {'gain':gain*self.params['gain_neuron']})
+               nest.SetStatus(nest.GetConnections(self.states[nstate], self.strD1[naction], self.params['synapse_d1']), {'gain':gain*self.params['gain_d1']})
+               nest.SetStatus(nest.GetConnections(self.states[nstate], self.strD2[naction]), {'gain':gain*self.params['gain_d2']})
     	
      #  for index_rp in range(self.params['n_actions'] * self.params['n_states']):
      #       for naction in range(self.params['n_actions']):

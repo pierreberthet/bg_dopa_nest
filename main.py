@@ -113,17 +113,20 @@ if __name__ == '__main__':
     #weights
     staten2D1 = np.empty(( params['n_recordings'], params['n_actions'] ))
     staten2D2 = np.empty(( params['n_recordings'], params['n_actions']))
+    stateb2D1 = np.empty(( params['n_recordings'], params['n_actions'] ))
+    stateb2D2 = np.empty(( params['n_recordings'], params['n_actions']))
     state2D1s = np.empty(( params['n_recordings'], params['n_states'] ))
     state2D2s = np.empty(( params['n_recordings'], params['n_states'] ))
     br_w0 = np.empty(( params['n_recordings'], params['n_actions']))
     br_w1 = np.empty(( params['n_recordings'], params['n_actions']))
     br_w2 = np.empty(( params['n_recordings'], params['n_actions']))
     rp_w = np.zeros(( params['n_recordings'], params['n_states'] * params['n_actions']))
+    rp_bias = np.zeros(( params['n_recordings'], params['n_states'] * params['n_actions']))
     
-    list_d1 = [ staten2D1, [],[],[],[],[],[],[], state2D1s ]
-    list_d2 = [ staten2D2, [],[],[],[],[],[],[], state2D2s ]
+    list_d1 = [ staten2D1, [],[],[],[],[],[],[], stateb2D1 ]
+    list_d2 = [ staten2D2, [],[],[],[],[],[],[], stateb2D2 ]
     list_br = [ [],[],[],[], br_w0, br_w1, br_w2 ]
-    list_rp = [ rp_w , [],[],[]]
+    list_rp = [ rp_w , [],[], rp_bias]
     
     
     if not params['light_record']:
@@ -207,7 +210,8 @@ if __name__ == '__main__':
     else:
         dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest.Simulate(params['t_init'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp,comm)
 
-    BG.set_gain(params['gain'])
+    #BG.set_gain(params['gain'])
+    BG.set_gain(1.)
     BG.set_noise()
     BG.stop_efference()
 #####   ###################         ###############
@@ -286,7 +290,7 @@ if __name__ == '__main__':
             # BG.set_kappa_ON(-params['rpe'], states[iteration], actions[iteration])
             BG.no_reward()
         #BG.set_reward(rew)
-        BG.set_rp(states[iteration], actions[iteration], params['gain_rp'] , 1.)
+        BG.set_rp(states[iteration], actions[iteration], 1. , 1.)
      #   BG.stop_efference()
 
         if comm != None:
@@ -299,7 +303,8 @@ if __name__ == '__main__':
             comm.barrier()
 
         BG.set_rp(states[iteration], actions[iteration], 0., 0. )
-        BG.set_gain(params['gain'])
+        #BG.set_gain(params['gain'])
+        BG.set_gain(1.)
       #  BG.set_kappa_OFF()
         BG.set_rest()
         if comm != None:
@@ -513,6 +518,30 @@ if __name__ == '__main__':
             print 'Im process ', pc_id, 'VTmod is ', nest.GetStatus(BG.vt_dopa) 
 
         # print 'weight simu ', weights_sim
+    if pc_id ==3:	
+        #print 'bias_d1', list_d1[8]
+        #print 'bias_d2', list_d2[8]
+        #print 'bias_rp', list_rp[3]
+        pl.figure(301)
+        pl.subplot(211)
+        pl.title('D1')
+        pl.plot(list_d1[8])
+        pl.ylabel(r'$b_{j}$')
+        pl.subplot(212)
+        pl.title('D2')
+        pl.plot(list_d2[8])
+        pl.ylabel(r'$b_{j}$')
+        pl.xlabel('trials')
+        pl.suptitle('Computed biases from state '+str(params['recorded'])+' to all actions')
+        pl.savefig('fig301_bias_allactions.pdf')
+
+        pl.figure(302)
+        pl.title('RP bias')
+        pl.plot(list_rp[3])
+        pl.ylabel(r'$b_{j}$')
+        pl.xlabel('trials')
+        pl.savefig('fig302_bias_rp.pdf')
+
     if pc_id ==1:	
         t1 = time.time() - t0
         print 'Time: %.2f [sec] %.2f [min]' % (t1, t1 / 60.)
