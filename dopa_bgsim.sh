@@ -3,15 +3,16 @@
 #SBATCH -J dopa_BG 
 
 # Only 1 hour wall-clock time will be given to this job
-#SBATCH -t 02:00:00
+#SBATCH --time=03:50:00
 
 # Number of MPI tasks.
 # always ask for complete nodes (i.e. mppwidth should normally
 # be a multiple of 20)
-#SBATCH -n 40
+#SBATCH --nodes=1
+####SBATCH -n 40
 
-#SBATCH -e error_file.e
-#SBATCH -o output_file.o
+#SBATCH --error=error_file.e
+#SBATCH --output=output_file.o
 #load the nest module
 module swap PrgEnv-cray PrgEnv-gnu
 module add python
@@ -37,7 +38,7 @@ export TMP=$(pwd)
 #    do
 temp="delme_output_$2"
 echo "Job $2 running, `date` params: $1"
-aprun -n 20 python /cfs/milner/scratch/b/berthet/code/dopabg/main.py $1 $2 $3 > $temp 2>&1
+aprun -n 20 -N 20 -S 10 -j 1 python /cfs/milner/scratch/b/berthet/code/dopabg/main.py $1 $2 $3 > $temp 2>&1
 #        COUNTER=`expr $COUNTER + 1`
 #    done
 #done

@@ -65,18 +65,18 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['t_reward']    = 250.  # [ms] 
         self.params['t_rest']      = 500.  # [ms] 
         self.params['t_delay']     = 0.    # [ms] 
-        self.params['t_init']      = 1000. # [ms] 
+        self.params['t_init']      = 2500. # [ms] 
         # time % (modulo) resolution has to be 0  --> for Figures processing
         self.params['resolution'] = 250.   # [ms]
         # after this time the input stimulus will be transformed
         self.params['block_len'] = 3       # number of trials in a block
-        self.params['n_blocks'] = 10        # number of blocks
+        self.params['n_blocks'] = 30        # number of blocks
         self.params['dt'] = .1             # [ms] /default .1
 
         self.params['record_spikes'] = False
         self.params['record_voltages'] = False 
         self.params['light_record'] = True
-        self.params['softmax'] = False
+        self.params['softmax'] = True
 
         self.params['threshold']= 0.05
 
@@ -98,12 +98,12 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['tau_i'] = 5.
         self.params['tau_j'] = 6.
         self.params['tau_e'] = 50.
-        self.params['tau_p'] = 1000. #1000.
+        self.params['tau_p'] = 500. #1000.
         self.params['gain'] = 6. #3.5 #2.5 ##1.9   #3.
         self.params['gain_d1'] = 6. #3.5 # 1. ##1.9   #3.
         self.params['gain_d2'] = 6.  #3.5 # 1. ##1.9   #3.
         self.params['gain_rp'] = -2.   # -3.
-        self.params['gain_dopa'] = 6.  #6.   #4.
+        self.params['gain_dopa'] = 5.  #6.   #4.
         self.params['gain_neuron'] = 20.       #gain for the neuron model has different impact (amplifies current injected) than gain in synapse model (amplifies weights)
         self.params['K'] = 0.
         self.params['fmax'] = 40. #100.  #70
@@ -116,7 +116,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['Cm'] = 250.
         self.params['Vreset'] = -80.
         self.params['gL'] = 16.6667
-        self.params['temperature'] = 10.
+        self.params['temperature'] = 20.
 
         self.params['Cm_std'] = 5. #0.01  #25.
         self.params['Vth_std'] = 1. #0.01   #2.
@@ -477,7 +477,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['params_dopa_bcpnn_RP']['tau_i']= 5.
         self.params['params_dopa_bcpnn_RP']['tau_j']= 6.
         self.params['params_dopa_bcpnn_RP']['tau_e']= 50.
-        self.params['params_dopa_bcpnn_RP']['tau_p']= 2000.
+        self.params['params_dopa_bcpnn_RP']['tau_p']= 3000.
         self.params['params_dopa_bcpnn_RP']['tau_n']= 100.
         self.params['params_dopa_bcpnn_RP']['fmax']= self.params['rp_fmax']
         self.params['params_dopa_bcpnn_RP']['gain_dopa']= 1.

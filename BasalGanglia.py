@@ -448,7 +448,7 @@ class BasalGanglia(object):
             nest.SetStatus(self.efference_copy[nactions], {'rate' : self.params['inactive_efference_rate']})
         #    print 'debug: EFFERENCE OFF for ACTION', nactions  , 'activity is: ',nest.GetStatus(self.efference_copy[nactions])[0]['rate'] 
         nest.SetStatus(self.efference_copy[action], {'rate' : self.params['active_full_efference_rate']})
-        print 'debug: EFFERENCE SET for ACTION',action ,' activity is: ',nest.GetStatus(self.efference_copy[action])[0]['rate'] 
+        #print 'debug: EFFERENCE SET for ACTION',action ,' activity is: ',nest.GetStatus(self.efference_copy[action])[0]['rate'] 
         
     def stop_efference(self):
         for nactions in xrange(self.params['n_actions']):
@@ -493,9 +493,9 @@ class BasalGanglia(object):
         
         for i in range(self.params['n_states']):
             nest.SetStatus(self.input_poisson[i], {'rate' : self.params['inactive_poisson_input_rate']})
-            print 'debug: STATE OFF, activity is: ',nest.GetStatus(self.input_poisson[i])[0]['rate'] 
+            #print 'debug: STATE OFF, activity is: ',nest.GetStatus(self.input_poisson[i])[0]['rate'] 
         nest.SetStatus(self.input_poisson[state], {'rate' : self.params['active_poisson_input_rate']})
-        print 'debug: STATE ON, activity is: ',nest.GetStatus(self.input_poisson[state])[0]['rate'] 
+        #print 'debug: STATE ON, activity is: ',nest.GetStatus(self.input_poisson[state])[0]['rate'] 
 
     def stop_state(self):
         """
@@ -503,7 +503,7 @@ class BasalGanglia(object):
         """
         for i in range(self.params['n_states']):
             nest.SetStatus(self.input_poisson[i], {'rate' : self.params['inactive_poisson_input_rate']})
-            print 'debug: STATE OFF, activity is: ',nest.GetStatus(self.input_poisson[i])[0]['rate'] 
+            #print 'debug: STATE OFF, activity is: ',nest.GetStatus(self.input_poisson[i])[0]['rate'] 
 
     def set_rest(self):
         """
@@ -577,18 +577,18 @@ class BasalGanglia(object):
     # absolute value of the reward
         if rew:
             nest.SetStatus(self.poisson_rew, {'rate' : self.params['active_poisson_rew_rate']})
-            print 'debug: REWARD SET, activity is: ',nest.GetStatus(self.poisson_rew)[0]['rate'] 
+            #print 'debug: REWARD SET, activity is: ',nest.GetStatus(self.poisson_rew)[0]['rate'] 
 
     def baseline_reward(self):
         nest.SetStatus(self.poisson_rew, {'rate' : self.params['baseline_poisson_rew_rate']})
-        print 'debug: REWARD BASELINE, activity is: ', nest.GetStatus(self.poisson_rew)[0]['rate']
+       # print 'debug: REWARD BASELINE, activity is: ', nest.GetStatus(self.poisson_rew)[0]['rate']
        # print 'KKAAPP D1' , nest.GetStatus(nest.GetConnections(self.states[0],self.strD1[0]))[0]
        # print 'KKAAPP D2' , nest.GetStatus(nest.GetConnections(self.states[0],self.strD2[0]))[0]
 
 
     def no_reward(self):
         nest.SetStatus(self.poisson_rew, {'rate' : self.params['inactive_poisson_rew_rate']})
-        print 'debug: REWARD OFF, activity is: ', nest.GetStatus(self.poisson_rew)[0]['rate']
+        #print 'debug: REWARD OFF, activity is: ', nest.GetStatus(self.poisson_rew)[0]['rate']
 
     def set_noise(self):
         nest.SetStatus(self.noise_d1_exc, {'rate': self.params['noise_rate_d1_exc']}) 
@@ -637,6 +637,17 @@ class BasalGanglia(object):
 #
 #       for index_rp in range(self.params['n_actions']) :
 #           nest.SetStatus([nest.FindConnections(self.actions[nactions])], {'gain':gain})
+    
+    def set_gain_dopa(self, gain):
+        # implement option to change locally to d1 or d2 or RP
+
+       for nstate in range(self.params['n_states']):
+           for naction in range(self.params['n_actions']):
+               # pp.pprint(nest.GetStatus(nest.GetConnections(self.states[nstate], self.strD1[naction], self.params['synapse_d1'])))
+              # nest.SetStatus(self.strD1[naction], {'gain':gain*self.params['gain_neuron']})
+              # nest.SetStatus(self.strD2[naction], {'gain':gain*self.params['gain_neuron']})
+               nest.SetStatus(nest.GetConnections(self.states[nstate], self.strD1[naction], self.params['synapse_d1']), {'gain_dopa':gain*self.params['gain_dopa']})
+               nest.SetStatus(nest.GetConnections(self.states[nstate], self.strD2[naction]), {'gain_dopa':gain*self.params['gain_dopa']})
 
     def set_kappa_ON(self, k, state, action):
         # implement option to change locally to d1 or d2 or RP

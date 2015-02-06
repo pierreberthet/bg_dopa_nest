@@ -32,7 +32,7 @@ def Simulate(time, resolution, nactions, nstates, BG, dopakf, dopak, dopam, dopa
     #rp_w = np.empty(nactions*nstates)
     
     for i in xrange(int(sim_time)):
-        print 'SIMULATE ', resolution, 'number ', i, 'out of ', int(sim_time), 'BG_count:', BG.rec_count 
+        #        print 'SIMULATE ', resolution, 'number ', i, 'out of ', int(sim_time), 'BG_count:', BG.rec_count 
         nest.Simulate(resolution)
         dkf[i], dk[i], dm[i], dn[i] =  nest.GetStatus(BG.conn_dopa2, ['k_filtered', 'k', 'm', 'n'])[0]
         for q in xrange(nactions):
@@ -130,12 +130,12 @@ def Simulate(time, resolution, nactions, nstates, BG, dopakf, dopak, dopam, dopa
             #list_rp[3][BG.rec_count,n] = np.mean([np.log(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n])])
             if rank == 0:
                 rp_bias = [np.log(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n]) ]
-                print 'bias_rp', rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
+#                print 'bias_rp', rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
                 for i_proc in xrange(1,size):
                     rp_bias= np.r_[rp_bias, comm.recv(source=i_proc)]
             else:
                 rp_bias = [np.log(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n]) ]
-                print 'bias_rp id', rank, 'bias = ',  rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
+#                print 'bias_rp id', rank, 'bias = ',  rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
                 comm.send( rp_bias , dest=0)
 
             if rank == 0:
