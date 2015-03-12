@@ -192,6 +192,7 @@ class BasalGanglia(object):
                     #nest.DivergentConnect(self.strD2[nactions], self.strD2[other], model=self.params['lateral_synapse_d2']  )
                     nest.RandomDivergentConnect(self.strD1[nactions], self.strD1[other], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1']) , weight = np.round(np.random.normal(self.params['inhib_lateral_weights_d1'], self.params['std_inhib_lateral_weights_d1'], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1'])),1).tolist(), delay= np.round(np.random.normal(self.params['inhib_lateral_delay_d1'],self.params['std_inhib_lateral_delay_d1'], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d1_d1'])),1).tolist() )
                     nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2']) , weight = np.round(np.random.normal(self.params['inhib_lateral_weights_d2'], self.params['std_inhib_lateral_weights_d2'], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2'])),1).tolist(), delay= np.round(np.random.normal(self.params['inhib_lateral_delay_d2'],self.params['std_inhib_lateral_delay_d2'], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2'])),1).tolist() )
+                    nest.RandomDivergentConnect(self.strD2[nactions], self.strD1[other], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d2_d1']) , weight = np.round(np.random.normal(self.params['inhib_lateral_weights_d2_d1'], self.params['std_inhib_lateral_weights_d2_d1'], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d2_d1'])),1).tolist(), delay= np.round(np.random.normal(self.params['inhib_lateral_delay_d2'],self.params['std_inhib_lateral_delay_d2'], int(self.params['num_msn_d1']/self.params['ratio_lat_inh_d2_d1'])),1).tolist() )
                     #nest.RandomDivergentConnect(self.strD2[nactions], self.strD2[other], int(self.params['num_msn_d2']/self.params['ratio_lat_inh_d2_d2']), weight = self.params['inhib_lateral_weights_d2'], delay= self.params['inhib_lateral_delay_d2'])
                 
                 #nest.RandomDivergentConnect(self.strD2[nactions], self.strD1[nactions], int(self.params['num_msn_d1']/4.), weight = self.params['inhib_lateral_weights_d2_d1'], delay= self.params['inhib_lateral_delay_d2'])
@@ -475,15 +476,23 @@ class BasalGanglia(object):
         self.comm.barrier()
         
         #print 'PARKINSON1 ', parkinsonian
-        print 'PARKINSON2 ', conn
+        #print 'PARKINSON2 ', conn
         for i in parkinsonian:
             for j in xrange(len(conn)):
                 if conn[j][0] == i:
                     #nest.SetStatus([conn[j]], {'weight':0.})
                     nest.SetStatus([conn[j][0]], {'frozen':True})
-                    print 'LOST ', conn[j], 'data ', nest.GetStatus([conn[j]])
+                    #print 'LOST ', conn[j], 'data ', nest.GetStatus([conn[j]])
 
+    def trigger_change_dopa_zero(self, value):
+        print 'BASE_SHIFT'
+        
+        for action in xrange(self.params['n_actions']):
+            nest.SetStatus(nest.GetConnections(target=self.strD1[action] , synapse_model=self.params['synapse_d1']), {'b': value})
+            nest.SetStatus(nest.GetConnections(target=self.strD2[action] , synapse_model=self.params['synapse_d2']), {'b': value})
 
+            for state in xrange(self.params['n_states']):
+                nest.SetStatus(nest.GetConnections(target=self.rp[action*state] , synapse_model=self.params['synapse_RP']), {'b': value})
 
 
     def set_state(self, state):

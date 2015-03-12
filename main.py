@@ -19,6 +19,8 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab as pl
 
+
+print 'INIT'
 # Load BCPNN synapse and bias-iaf neuron module                                                                                                
 if (not 'bcpnn_dopamine_synapse' in nest.Models()):
     nest.sr('(/cfs/milner/scratch/b/berthet/modules/bcpnndopa_module/share/ml_module/sli) addpath') #t/tully/sequences/share/nest/sli
@@ -224,9 +226,10 @@ if __name__ == '__main__':
         
         print 'ITERATION', iteration
         if params['trigger'] and block==params['block_trigger']:
-            BG.trigger_reduce_pop_dopa(params['value_trigg'])
+            BG.trigger_reduce_pop_dopa(params['value_trigg_dopa_death'])
+            #BG.trigger_change_dopa_zero(params['value_trigg_bias'])
             #params['baseline_poisson_rew_rate']= params['new_value']
-            #print 'TRIGGER new value: ', params['baseline_poisson_rew_rate']
+            print 'TRIGGER_CLICK '
             params['trigger'] = False
 
         state = iteration % params['n_states']
@@ -267,7 +270,8 @@ if __name__ == '__main__':
         if comm != None:
             comm.barrier()
 
-        #BG.set_rest()
+        BG.stop_efference()
+        BG.set_rest()
         if params['light_record']:
             dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest_light.Simulate(params['t_delay'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp, comm)
         else:
@@ -282,7 +286,7 @@ if __name__ == '__main__':
         
         rewards[iteration] = rew
 
-        BG.set_striosomes( states[iteration], actions[iteration], 0.)
+        #BG.set_striosomes( states[iteration], actions[iteration], 0.)
         print 'REWARD =', rew
        # BG.set_gain(0.)
         if rew == 1:
