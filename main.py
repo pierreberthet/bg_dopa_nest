@@ -270,8 +270,10 @@ if __name__ == '__main__':
         if comm != None:
             comm.barrier()
 
-        BG.stop_efference()
-        BG.set_rest()
+        if params['delay']:
+            BG.stop_efference()
+            BG.set_rest()
+
         if params['light_record']:
             dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest_light.Simulate(params['t_delay'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp, comm)
         else:
@@ -285,8 +287,10 @@ if __name__ == '__main__':
         rew = utils.communicate_reward(comm, R , state, actions[iteration], block )
         
         rewards[iteration] = rew
-
-        #BG.set_striosomes( states[iteration], actions[iteration], 0.)
+        
+        if params['delay']:
+            BG.set_striosomes( states[iteration], actions[iteration], 0.)
+        
         print 'REWARD =', rew
        # BG.set_gain(0.)
         if rew == 1:

@@ -45,7 +45,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
 
 
     def set_dependables(self):
-        self.params['t_iteration'] = self.params['t_selection'] + self.params['t_efference'] + self.params['t_rest'] + self.params['t_reward']  # [ms] stimulus integration time, 
+        self.params['t_iteration'] = self.params['t_selection'] + self.params['t_efference'] + self.params['t_delay'] + self.params['t_reward'] + self.params['t_rest'] # [ms] stimulus integration time, 
         self.params['t_sim'] = self.params['t_init'] + self.params['t_iteration'] * self.params['block_len'] * self.params['n_blocks']          # [ms] total simulation time
         self.params['n_iterations'] = self.params['block_len'] * self.params['n_blocks']  #int(round(2*self.params['t_sim'] / self.params['t_iteration']))
         self.params['n_recordings'] = self.params['t_sim'] / self.params['resolution']
@@ -123,9 +123,9 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['Vreset_std'] = 1. #0.01 #2.
         
         ########### SIMULATION PARAMETERS
-        self.params['trigger']= False
+        self.params['trigger']= True
         self.params['block_trigger'] = 10  #10
-        self.params['value_trigg_dopa_death'] = 30. #percentage of dopamine neurons silenced by the disease
+        self.params['value_trigg_dopa_death'] = 50. #percentage of dopamine neurons silenced by the disease
         self.params['value_trigg_bias'] = .05 #percentage of dopamine neurons silenced by the disease
         self.params['new_value_2'] = 2450.
        # self.params['active_poisson_rew_rate'] = 2700.
