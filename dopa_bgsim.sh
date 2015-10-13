@@ -1,9 +1,9 @@
 #!/bin/bash -l
 # The name of the script is myjob
-#SBATCH -J testdelay_dBG 
+#SBATCH -J HABIT_BG 
 
 # Only 1 hour wall-clock time will be given to this job
-#SBATCH --time=01:59:59
+#SBATCH --time=03:59:50
 
 # Number of MPI tasks.
 # always ask for complete nodes (i.e. mppwidth should normally

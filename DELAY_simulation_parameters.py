@@ -62,13 +62,14 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['t_efference'] = 250.  # [ms]
         self.params['t_reward']    = 250.  # [ms] 
         self.params['t_rest']      = 500.  # [ms] 
+        self.params['delay']       = True   # stop the efference and state before simulating the delay, and prevents RP to fire after the reward period.
         self.params['t_delay']     = 1000.  # [ms] 
         self.params['t_init']      = 1000. # [ms] 
         # time % (modulo) resolution has to be 0  --> for Figures processing
         self.params['resolution'] = 250.   # [ms]
         # after this time the input stimulus will be transformed
-        self.params['block_len'] = 100       # number of trials in a block
-        self.params['n_blocks'] = 10        # number of blocks
+        self.params['block_len'] = 80       # number of trials in a block
+        self.params['n_blocks'] = 9        # number of blocks
         self.params['dt'] = .1             # [ms] /default .1
 
         self.params['record_spikes'] = True
@@ -95,13 +96,13 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['epsilon'] = 0.0001 
         self.params['tau_i'] = 5.
         self.params['tau_j'] = 6.
-        self.params['tau_e'] = 5000.
-        self.params['tau_p'] = 100000. #1000.
+        self.params['tau_e'] = 2000.
+        self.params['tau_p'] = 10000. #1000.
         self.params['gain'] = 6. #3.5 #2.5 ##1.9   #3.
-        self.params['gain_d1'] = 6. #3.5 # 1. ##1.9   #3.
-        self.params['gain_d2'] = 6.  #3.5 # 1. ##1.9   #3.
+        self.params['gain_d1'] = 4. #3.5 # 1. ##1.9   #3.
+        self.params['gain_d2'] = 4. #3.5 # 1. ##1.9   #3.
         self.params['gain_rp'] = -5.   # -4.
-        self.params['gain_dopa'] = 50.  #6.   #4.
+        self.params['gain_dopa'] = 30.  #6.   #4.
         self.params['gain_neuron'] = 20.       #gain for the neuron model has different impact (amplifies current injected) than gain in synapse model (amplifies weights)
         self.params['K'] = 0.
         self.params['fmax'] = 40. #100.  #70
@@ -349,7 +350,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
 
         self.params['num_neuron_poisson_efference'] = 1
         self.params['num_neuron_poisson_input_BG'] =1 
-        self.params['active_full_efference_rate'] = 700.
+        self.params['active_full_efference_rate'] = 900. #700.
         self.params['inactive_efference_rate'] = 1.
         self.params['active_poisson_input_rate'] = 1950.  #1750.   #1900.  #2500.
         self.params['inactive_poisson_input_rate'] = 1500. #1400.
@@ -477,11 +478,11 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['params_dopa_bcpnn_RP']['k_pow']= 2.
         self.params['params_dopa_bcpnn_RP']['tau_i']= 5.
         self.params['params_dopa_bcpnn_RP']['tau_j']= 6.
-        self.params['params_dopa_bcpnn_RP']['tau_e']= 5000.
-        self.params['params_dopa_bcpnn_RP']['tau_p']= 100000.
+        self.params['params_dopa_bcpnn_RP']['tau_e']= 2000.
+        self.params['params_dopa_bcpnn_RP']['tau_p']= 10000.
         self.params['params_dopa_bcpnn_RP']['tau_n']= 100.
         self.params['params_dopa_bcpnn_RP']['fmax']= self.params['rp_fmax']
-        self.params['params_dopa_bcpnn_RP']['gain_dopa']= 10. #1.
+        self.params['params_dopa_bcpnn_RP']['gain_dopa']= 20. #1.
         self.params['params_dopa_bcpnn_RP']['gain']= self.params['gain_rp']
         self.params['params_dopa_bcpnn_RP']['delay']=self.params['t_efference']+self.params['t_delay']
 
@@ -522,9 +523,9 @@ class global_parameters(ParameterContainer.ParameterContainer):
         # =========================
         # NOISE 
         # =========================
-        self.params['noise_weight_d1_exc']= 5.5# 1. 
+        self.params['noise_weight_d1_exc']= 4. #5.5# 1. 
         self.params['noise_weight_d1_inh']= 2.# 1. 
-        self.params['noise_weight_d2_exc']= 5.5# 1.
+        self.params['noise_weight_d2_exc']= 4. #5.5# 1.
         self.params['noise_weight_d2_inh']= 2.# 1.
         self.params['noise_weight_actions_exc']= 2. #1.5
         self.params['noise_weight_actions_inh']= 1.5

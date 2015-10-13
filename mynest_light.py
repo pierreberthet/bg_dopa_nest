@@ -53,6 +53,55 @@ def Simulate(time, resolution, nactions, nstates, BG, dopakf, dopak, dopam, dopa
 
             if rank == 0:
                 #conn_d1 = (nest.GetConnections( source = BG.states[BG.who], target=BG.strD1[q], synapse_model='bcpnn_dopamine_synapse_d1' ))
+                log = [np.log(a['p_ij']/(a['p_i']*a['p_j'])) for a in nest.GetStatus(BG.conn_habit0[q]) ]
+                #print 'lolog1', log, 'len = ', len(log), ' avg = ', np.mean(log)
+                for i_proc in xrange(1,size):
+                    log = np.r_[log, comm.recv(source=i_proc)]
+            else:
+                data = [np.log(a['p_ij']/ (a['p_j']* a['p_i'])) for a in nest.GetStatus(BG.conn_habit0[q])]
+                comm.send( data , dest=0)
+                #print 'logelse id = ', rank, 'mean log = ', np.mean(data)
+
+            if rank == 0:
+                avg_h0 = np.mean(log)
+                list_br[4][BG.rec_count, q] = avg_h0
+            list_br[4][BG.rec_count,q] = comm.bcast(list_br[4][BG.rec_count,q], root=0)
+            comm.barrier()
+            if rank == 0:
+                #conn_d1 = (nest.GetConnections( source = BG.states[BG.who], target=BG.strD1[q], synapse_model='bcpnn_dopamine_synapse_d1' ))
+                log = [np.log(a['p_ij']/(a['p_i']*a['p_j'])) for a in nest.GetStatus(BG.conn_habit1[q]) ]
+                #print 'lolog1', log, 'len = ', len(log), ' avg = ', np.mean(log)
+                for i_proc in xrange(1,size):
+                    log = np.r_[log, comm.recv(source=i_proc)]
+            else:
+                data = [np.log(a['p_ij']/ (a['p_j']* a['p_i'])) for a in nest.GetStatus(BG.conn_habit1[q])]
+                comm.send( data , dest=0)
+                #print 'logelse id = ', rank, 'mean log = ', np.mean(data)
+
+            if rank == 0:
+                avg_h1 = np.mean(log)
+                list_br[5][BG.rec_count, q] = avg_h1
+            list_br[5][BG.rec_count,q] = comm.bcast(list_br[5][BG.rec_count,q], root=0)
+            comm.barrier()
+            if rank == 0:
+                #conn_d1 = (nest.GetConnections( source = BG.states[BG.who], target=BG.strD1[q], synapse_model='bcpnn_dopamine_synapse_d1' ))
+                log = [np.log(a['p_ij']/(a['p_i']*a['p_j'])) for a in nest.GetStatus(BG.conn_habit2[q]) ]
+                #print 'lolog1', log, 'len = ', len(log), ' avg = ', np.mean(log)
+                for i_proc in xrange(1,size):
+                    log = np.r_[log, comm.recv(source=i_proc)]
+            else:
+                data = [np.log(a['p_ij']/ (a['p_j']* a['p_i'])) for a in nest.GetStatus(BG.conn_habit2[q])]
+                comm.send( data , dest=0)
+                #print 'logelse id = ', rank, 'mean log = ', np.mean(data)
+
+            if rank == 0:
+                avg_h2 = np.mean(log)
+                list_br[6][BG.rec_count, q] = avg_h2
+            list_br[6][BG.rec_count,q] = comm.bcast(list_br[6][BG.rec_count,q], root=0)
+            comm.barrier()
+
+            if rank == 0:
+                #conn_d1 = (nest.GetConnections( source = BG.states[BG.who], target=BG.strD1[q], synapse_model='bcpnn_dopamine_synapse_d1' ))
                 log = [np.log(a['p_ij']/(a['p_i']*a['p_j'])) for a in nest.GetStatus(BG.conn_d1[q]) ]
                 #print 'lolog1', log, 'len = ', len(log), ' avg = ', np.mean(log)
                 for i_proc in xrange(1,size):
@@ -129,12 +178,12 @@ def Simulate(time, resolution, nactions, nstates, BG, dopakf, dopak, dopam, dopa
             #list_rp[0][BG.rec_count,n] = np.mean([(np.log(a['p_ij']/(a['p_i']*a['p_j']))) for a in nest.GetStatus(BG.conn_rp[n])])
             #list_rp[3][BG.rec_count,n] = np.mean([np.log(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n])])
             if rank == 0:
-                rp_bias = [np.log(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n]) ]
+                rp_bias = [(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n]) ]
 #                print 'bias_rp', rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
                 for i_proc in xrange(1,size):
                     rp_bias= np.r_[rp_bias, comm.recv(source=i_proc)]
             else:
-                rp_bias = [np.log(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n]) ]
+                rp_bias = [(a['p_j']) for a in nest.GetStatus(BG.conn_rp[n]) ]
 #                print 'bias_rp id', rank, 'bias = ',  rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
                 comm.send( rp_bias , dest=0)
 
@@ -144,7 +193,37 @@ def Simulate(time, resolution, nactions, nstates, BG, dopakf, dopak, dopam, dopa
             list_rp[3][BG.rec_count,n] = comm.bcast(list_rp[3][BG.rec_count,n], root=0)
             comm.barrier()
 
+           # if rank == 0:
+           #     rp_pi = [(a['p_i']) for a in nest.GetStatus(BG.conn_rp[n]) ]
+#          #      print 'bias_rp', rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
+           #     for i_proc in xrange(1,size):
+           #         rp_pi= np.r_[rp_pi, comm.recv(source=i_proc)]
+           # else:
+           #     rp_pi = [(a['p_i']) for a in nest.GetStatus(BG.conn_rp[n]) ]
+#          #      print 'bias_rp id', rank, 'bias = ',  rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
+           #     comm.send( rp_pi , dest=0)
 
+           # if rank == 0:
+           #     avg_rp_pi = np.mean(rp_pi)
+           #     list_rp[1][BG.rec_count, n] = avg_rp_pi
+           # list_rp[1][BG.rec_count,n] = comm.bcast(list_rp[1][BG.rec_count,n], root=0)
+           # comm.barrier()
+
+           # if rank == 0:
+           #     rp_pij = [(a['p_ij']) for a in nest.GetStatus(BG.conn_rp[n]) ]
+#          #      print 'bias_rp', rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
+           #     for i_proc in xrange(1,size):
+           #         rp_pij= np.r_[rp_pij, comm.recv(source=i_proc)]
+           # else:
+           #     rp_pij = [(a['p_ij']) for a in nest.GetStatus(BG.conn_rp[n]) ]
+#          #      print 'bias_rp id', rank, 'bias = ',  rp_bias, 'len = ', len(rp_bias), ' avg = ', np.mean(rp_bias)
+           #     comm.send( rp_pij , dest=0)
+
+           # if rank == 0:
+           #     avg_rp_pij = np.mean(rp_pij)
+           #     list_rp[2][BG.rec_count, n] = avg_rp_pij
+           # list_rp[2][BG.rec_count,n] = comm.bcast(list_rp[2][BG.rec_count,n], root=0)
+           # comm.barrier()
 
             if rank == 0:
                 rp_w = [np.log(a['p_ij']/(a['p_i']*a['p_j'])) for a in nest.GetStatus(BG.conn_rp[n]) ]

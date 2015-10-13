@@ -38,6 +38,7 @@ except:
     pc_id, n_proc, comm = 0, 1, None
     print "MPI not used"
 nest.ResetKernel()
+nest.ResetKernel()
 #USE_MPI = False
 #pc_id, n_proc, comm = 0, 1, None
 #print "MPI not used"
@@ -59,7 +60,7 @@ nest.SetKernelStatus({"overwrite_files": True})
 #nest.SetKernelStatus({'grng_seed': msd+N_vp})
 #nest.SetKernelStatus({'rng_seeds':range(msd+N_vp+1, msd+2*N_vp+1 )})
 
-#np.random.seed(800)
+#np.random.seed(np.random.randint(0,10000))
 
 
 def save_spike_trains(params, iteration, stim_list, gid_list):
@@ -124,11 +125,13 @@ if __name__ == '__main__':
     br_w2 = np.empty(( params['n_recordings'], params['n_actions']))
     rp_w = np.zeros(( params['n_recordings'], params['n_states'] * params['n_actions']))
     rp_bias = np.zeros(( params['n_recordings'], params['n_states'] * params['n_actions']))
+    rp_pi = np.zeros(( params['n_recordings'], params['n_states'] * params['n_actions']))
+    rp_pij = np.zeros(( params['n_recordings'], params['n_states'] * params['n_actions']))
     
     list_d1 = [ staten2D1, [],[],[],[],[],[],[], stateb2D1 ]
     list_d2 = [ staten2D2, [],[],[],[],[],[],[], stateb2D2 ]
     list_br = [ [],[],[],[], br_w0, br_w1, br_w2 ]
-    list_rp = [ rp_w , [],[], rp_bias]
+    list_rp = [ rp_w , rp_pi,rp_pij, rp_bias]
     
     
     if not params['light_record']:
@@ -174,16 +177,17 @@ if __name__ == '__main__':
         br_pij = np.empty(params['n_actions'])
         br_eij = np.empty(params['n_actions'])
 
-        rp_pi = np.zeros(params['n_states'] * params['n_actions'])
+        #rp_pi = np.zeros(params['n_states'] * params['n_actions'])
         rp_pj = np.zeros(params['n_states'] * params['n_actions'])
-        rp_pij = np.zeros(params['n_states'] * params['n_actions'])
+        #rp_pij = np.zeros(params['n_states'] * params['n_actions'])
 
 
 
         list_d1 = [ staten2D1, action2D1, state_D1_pi, state_D1_pj, state_D1_pij, state_D1_eij, state_D1_eijc, stdaction2D1, state2D1s]
         list_d2 = [ staten2D2, action2D2, state_D2_pi, state_D2_pj, state_D2_pij, state_D2_eij, state_D2_eijc, stdaction2D2, state2D2s]
         list_br = [br_eij, br_pi, br_pj, br_pij, br_w0, br_w1, br_w2]
-        list_rp = [rp_w, rp_pi, rp_pj, rp_pij]
+        #list_rp = [rp_w, rp_pi, rp_pj, rp_pij]
+        list_rp = [rp_w, [], rp_pj, []]
 
     #kf = filtered k
     dopa_kf = np.array([])
@@ -225,14 +229,22 @@ if __name__ == '__main__':
     for iteration in xrange(params['n_iterations']):
         
         print 'ITERATION', iteration
-        if params['trigger'] and block==params['block_trigger']:
+        state = iteration % params['n_states']
+
+        if params['trigger1'] and block==params['block_trigger1']:
             BG.trigger_reduce_pop_dopa(params['value_trigg_dopa_death'])
+            #state = (iteration-1) % params['n_states']
+            #block = int ((iteration-1) / params['block_len'])
+            #BG.trigger_habit(True)
             #BG.trigger_change_dopa_zero(params['value_trigg_bias'])
             #params['baseline_poisson_rew_rate']= params['new_value']
-            print 'TRIGGER_CLICK '
-            params['trigger'] = False
+            params['trigger1'] = False
 
-        state = iteration % params['n_states']
+             
+        if params['trigger2'] and block==params['block_trigger2']:
+            BG.trigger_habit(False)
+            params['trigger2'] = False
+
 #        state = utils.communicate_state(comm, params['n_states']) 
         BG.set_state(state)
         BG.baseline_reward()
@@ -260,7 +272,7 @@ if __name__ == '__main__':
         if comm != None:
             comm.barrier()
         BG.set_rp(states[iteration], actions[iteration], 0., 0.)
-        BG.set_striosomes( states[iteration], actions[iteration], params['weight_efference_rp'])
+        ###BG.set_striosomes( states[iteration], actions[iteration], params['weight_efference_rp'])
         if params['light_record']:
             dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest_light.Simulate(params['t_efference'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp, comm)
         else:
@@ -273,6 +285,7 @@ if __name__ == '__main__':
         if params['delay']:
             BG.stop_efference()
             BG.set_rest()
+            BG.set_gain(1.)
 
         if params['light_record']:
             dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest_light.Simulate(params['t_delay'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp, comm)
@@ -288,8 +301,8 @@ if __name__ == '__main__':
         
         rewards[iteration] = rew
         
-        if params['delay']:
-            BG.set_striosomes( states[iteration], actions[iteration], 0.)
+       # if params['delay']:
+       #     BG.set_striosomes( states[iteration], actions[iteration], 0.)
         
         print 'REWARD =', rew
        # BG.set_gain(0.)
@@ -312,9 +325,10 @@ if __name__ == '__main__':
         if comm != None:
             comm.barrier()
 
-        BG.set_rp(states[iteration], actions[iteration], 0., 0. )
+        ###BG.set_rp(states[iteration], actions[iteration], 0., 0. )
         #BG.set_gain(params['gain'])
-        BG.set_gain(1.)
+        if not(params['delay']):
+            BG.set_gain(1.)
       #  BG.set_kappa_OFF()
         BG.set_rest()
         if comm != None:
@@ -439,15 +453,15 @@ if __name__ == '__main__':
                 comm.barrier()
 #######################
             if pc_id == 0:
-                exc_sptimes = nest.GetStatus(BG.recorder_output[0])[0]['events']['times']
+                exc_sptimes = nest.GetStatus(BG.recorder_gpi[0])[0]['events']['times']
                 for i_proc in xrange(1,n_proc ):
                     exc_sptimes = np.r_[exc_sptimes, comm.recv(source=i_proc, tag=8)]
             else:
-                comm.send(nest.GetStatus(BG.recorder_output[0])[0]['events']['times'],dest=0, tag=8)
+                comm.send(nest.GetStatus(BG.recorder_gpi[0])[0]['events']['times'],dest=0, tag=8)
             if comm != None:
                 comm.barrier()
             if pc_id == 0:
-                exc_spids = nest.GetStatus(BG.recorder_output[0])[0]['events']['senders']
+                exc_spids = nest.GetStatus(BG.recorder_gpi[0])[0]['events']['senders']
                 for i_proc in xrange(1, n_proc):
                     exc_spids = np.r_[exc_spids, comm.recv(source=i_proc, tag = 9)]
                 pl.figure(315)
@@ -456,14 +470,45 @@ if __name__ == '__main__':
                 pl.xlim([0,params['t_sim']])
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
-                rate_exc = c_exc*(1000./binsize)*(1./params['num_brainstem_neurons'])
+                rate_exc = c_exc*(1000./binsize)*(1./params['num_gpi'])
                 pl.subplot(212)
                 pl.plot(b[0:-1],rate_exc)
                 pl.xlim([0,params['t_sim']])
                 pl.title('firing rate of GPi neurons')
                 pl.savefig('fig12_gpi_firingrate.pdf')
             else:
-                comm.send(nest.GetStatus(BG.recorder_output[0])[0]['events']['senders'],dest=0, tag=9)
+                comm.send(nest.GetStatus(BG.recorder_gpi[0])[0]['events']['senders'],dest=0, tag=9)
+            if comm != None:
+                comm.barrier()
+#######################
+            if pc_id == 0:
+                exc_sptimes = nest.GetStatus(BG.recorder_brainstem[0])[0]['events']['times']
+                for i_proc in xrange(1,n_proc ):
+                    exc_sptimes = np.r_[exc_sptimes, comm.recv(source=i_proc, tag=12)]
+            else:
+                comm.send(nest.GetStatus(BG.recorder_brainstem[0])[0]['events']['times'],dest=0, tag=12)
+            if comm != None:
+                comm.barrier()
+            if pc_id == 0:
+                exc_spids = nest.GetStatus(BG.recorder_brainstem[0])[0]['events']['senders']
+                for i_proc in xrange(1, n_proc):
+                    exc_spids = np.r_[exc_spids, comm.recv(source=i_proc, tag = 13)]
+                pl.figure(31525)
+                pl.subplot(211)
+                #pl.scatter(exc_sptimes, exc_spids,s=1.)
+                pl.plot(exc_sptimes)
+                pl.plot(exc_spids)
+                pl.xlim([0,params['t_sim']])
+                bins=np.arange(0, params['t_sim']+1, binsize)
+                c_exc,b = np.histogram(exc_sptimes,bins=bins)
+                rate_exc = c_exc*(1000./binsize)*(1./params['num_brainstem_neurons'])
+                pl.subplot(212)
+                pl.plot(b[0:-1],rate_exc)
+                pl.xlim([0,params['t_sim']])
+                pl.title('firing rate of brainstem neurons')
+                pl.savefig('fig13_brainstem_firingrate.pdf')
+            else:
+                comm.send(nest.GetStatus(BG.recorder_gpi[0])[0]['events']['senders'],dest=0, tag=13)
             if comm != None:
                 comm.barrier()
 #######################
@@ -514,12 +559,12 @@ if __name__ == '__main__':
                 pl.xlim([0,params['t_sim']])
                 bins=np.arange(0, params['t_sim']+1, binsize)
                 c_exc,b = np.histogram(exc_sptimes,bins=bins)
-                rate_exc = c_exc*(1000./binsize)*(1./params['num_brainstem_neurons'])
+                rate_exc = c_exc*(1000./binsize)*(1./params['num_rp_neurons'])
                 pl.subplot(212)
                 pl.plot(b[0:-1],rate_exc)
                 pl.xlim([0,params['t_sim']])
                 pl.title('firing rate of striosomes neurons')
-                pl.savefig('fig13_rp_firingrate.pdf')
+                pl.savefig('fig14_rp_firingrate.pdf')
             else:
                 comm.send(nest.GetStatus(BG.recorder_rp[0])[0]['events']['senders'],dest=0, tag=11)
             if comm != None:
@@ -528,29 +573,29 @@ if __name__ == '__main__':
             print 'Im process ', pc_id, 'VTmod is ', nest.GetStatus(BG.vt_dopa) 
 
         # print 'weight simu ', weights_sim
-    if pc_id ==3:	
+    #if pc_id ==3:	
         #print 'bias_d1', list_d1[8]
         #print 'bias_d2', list_d2[8]
         #print 'bias_rp', list_rp[3]
-        pl.figure(301)
-        pl.subplot(211)
-        pl.title('D1')
-        pl.plot(list_d1[8])
-        pl.ylabel(r'$b_{j}$')
-        pl.subplot(212)
-        pl.title('D2')
-        pl.plot(list_d2[8])
-        pl.ylabel(r'$b_{j}$')
-        pl.xlabel('trials')
-        pl.suptitle('Computed biases from state '+str(params['recorded'])+' to all actions')
-        pl.savefig('fig301_bias_allactions.pdf')
+       # pl.figure(301)
+       # pl.subplot(211)
+       # pl.title('D1')
+       # pl.plot(list_d1[8])
+       # pl.ylabel(r'$b_{j}$')
+       # pl.subplot(212)
+       # pl.title('D2')
+       # pl.plot(list_d2[8])
+       # pl.ylabel(r'$b_{j}$')
+       # pl.xlabel('trials')
+       # pl.suptitle('Computed biases from state '+str(params['recorded'])+' to all actions')
+       # pl.savefig('fig301_bias_allactions.pdf')
 
-        pl.figure(302)
-        pl.title('RP bias')
-        pl.plot(list_rp[3])
-        pl.ylabel(r'$b_{j}$')
-        pl.xlabel('trials')
-        pl.savefig('fig302_bias_rp.pdf')
+       # pl.figure(302)
+       # pl.title('RP bias')
+       # pl.plot(list_rp[3])
+       # pl.ylabel(r'$b_{j}$')
+       # pl.xlabel('trials')
+       # pl.savefig('fig302_bias_rp.pdf')
 
     if pc_id ==1:	
         t1 = time.time() - t0
@@ -651,6 +696,16 @@ if __name__ == '__main__':
         pl.legend()
         pl.ylabel('variable value')
         pl.savefig('fig6_dopa.pdf')
+        pl.figure(1005)
+        #pl.plot(dopa_kf, label='kf')
+        #pl.plot(dopa_k, label='k')
+        pl.plot(dopa_m, label = 'm')
+        pl.plot(dopa_n, label = 'n')
+        pl.title('dopamine RPE dynamics' )
+        pl.xlabel('time in '+ str(params['resolution'])+ 'ms')
+        pl.legend()
+        pl.ylabel('variable value')
+        pl.savefig('fig60_dopa.pdf')
 
         if not params['light_record']:
             pl.figure(88)
@@ -702,6 +757,14 @@ if __name__ == '__main__':
    #     pl.legend()
    #     pl.ylabel('parameter value')
    #     pl.savefig('fig8_dopa_mpi.pdf')
+   #     pl.figure(8878)
+   #     pl.plot(dopa_m, label = 'm')
+   #     pl.plot(dopa_n, label = 'n')
+   #     pl.title('dopa parameters dynamics' )
+   #     pl.xlabel('trials')
+   #     pl.legend()
+   #     pl.ylabel('parameter value')
+   #     pl.savefig('fig889_dopa_mpi.pdf')
    # else:
    #     comm.send(dopa_n, dest=0, tag=6)
 
@@ -797,20 +860,35 @@ if __name__ == '__main__':
 
     if pc_id == 1:
 
-       # print 'list_rp_check_0'
-       # pp.pprint(list_rp[0])
-       # print 'list_rp_check_1'
-       # pp.pprint(list_rp[1])
-       # print 'list_rp_check_2'
-       # pp.pprint(list_rp[2])
-       # print 'list_rp_check_3'
-       # pp.pprint(list_rp[3])
+        # print 'list_rp_check_0'
+        # pp.pprint(list_rp[0])
+        # print 'list_rp_check_1'
+        # pp.pprint(list_rp[1])
+        # print 'list_rp_check_2'
+        # pp.pprint(list_rp[2])
+        # print 'list_rp_check_3'
+        # pp.pprint(list_rp[3])
 
         pl.figure(9001)
         pl.plot(list_rp[0], label='Wij')
         pl.title('Weight RP/Rew')
         pl.savefig('fig9001_meanWijRP.pdf')
         
+       # pl.figure(9033)
+       # pl.plot(list_rp[1], label='Pi')
+       # pl.title('Traces RP Pi')
+       # pl.legend()
+       # pl.savefig('fig_meantracesRPi.pdf')
+       # pl.figure(9034)
+       # pl.plot(list_rp[2], label='Pij')
+       # pl.title('Traces RP Pij')
+       # pl.legend()
+       # pl.savefig('fig_meantracesRPij.pdf')
+       # pl.figure(9035)
+       # pl.plot(list_rp[3], label='Pj')
+       # pl.title('Traces RP Pj')
+       # pl.legend()
+       # pl.savefig('fig_meantracesRPj.pdf')
         if not params['light_record']:
             pl.figure(9002)
             pl.plot(list_rp[1], label='Pi')
