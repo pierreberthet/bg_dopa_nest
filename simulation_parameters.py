@@ -114,8 +114,8 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['gain'] = 9. 
         self.params['gain_d1'] = 5.         # gain for the weights in D1
         self.params['gain_d2'] = 5.         # gain for the weights in D2
-        self.params['gain_rp'] = -2.        # gain for the weights in RP
-        self.params['gain_dopa'] = 25.      # gain for the plasticity amplitude
+        self.params['gain_rp'] = -1.        # gain for the weights in RP
+        self.params['gain_dopa'] = 28.      # gain for the plasticity amplitude
         self.params['gain_neuron'] = 20.    # gain for the neuron model has different impact (amplifies current injected) than gain in synapse model (amplifies weights)
         self.params['K'] = 0.
         self.params['fmax'] = 35.       # Cortico-matrisomal synapses, should be set to the max firing rate of the pre and post synaptic populations.
@@ -171,7 +171,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['num_gpi'] = 10      # Number of neurons per actions in GPi/SNr
         self.params['param_gpi'] = {'V_reset': self.params['Vreset']} # to adapt parms to aif_cond_alpha neuron model
         
-        self.params['str_gpi_exc_w'] = 15.  # Synaptic weight from striatal MSNs D2 to GPi/SNr
+        self.params['str_gpi_exc_w'] = 16.  # Synaptic weight from striatal MSNs D2 to GPi/SNr
         self.params['str_gpi_inh_w'] = -3.  # Synaptic weight from striatal MSNs D1 to GPi/SNr
         self.params['str_gpi_exc_delay'] = 2. # Synaptic delay from striatal MSNs D2 to GPi/SNr
         self.params['str_gpi_inh_delay'] = 2. # Synaptic delay from striatal MSNs D1 to GPi/SNr
@@ -496,11 +496,11 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['params_dopa_bcpnn_RP']['k_pow']= 2.  #2.
         self.params['params_dopa_bcpnn_RP']['tau_i']= 12.
         self.params['params_dopa_bcpnn_RP']['tau_j']= 15.
-        self.params['params_dopa_bcpnn_RP']['tau_e']= 50.
+        self.params['params_dopa_bcpnn_RP']['tau_e']= 40.
         self.params['params_dopa_bcpnn_RP']['tau_p']= 2000.
         self.params['params_dopa_bcpnn_RP']['tau_n']= 100.
         self.params['params_dopa_bcpnn_RP']['fmax']= self.params['rp_fmax']
-        self.params['params_dopa_bcpnn_RP']['gain_dopa']= 25. #8. #14.
+        self.params['params_dopa_bcpnn_RP']['gain_dopa']= 15. #8. #14.
         self.params['params_dopa_bcpnn_RP']['gain']= self.params['gain_rp']
 
         if not self.params['params_dopa_bcpnn_RP']['dopamine_modulated']:
