@@ -82,7 +82,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['resolution'] = 250.   # [ms]
 
         self.params['block_len'] = 40       # number of trials in a block
-        self.params['n_blocks'] = 15        # number of blocks
+        self.params['n_blocks'] = 10        # number of blocks
         self.params['dt'] = .1              # [ms] /default .1
 
         self.params['record_spikes'] = True
@@ -115,7 +115,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         self.params['gain_d1'] = 5.         # gain for the weights in D1
         self.params['gain_d2'] = 5.         # gain for the weights in D2
         self.params['gain_rp'] = -1.        # gain for the weights in RP
-        self.params['gain_dopa'] = 28.      # gain for the plasticity amplitude
+        self.params['gain_dopa'] = 27.      # gain for the plasticity amplitude
         self.params['gain_neuron'] = 20.    # gain for the neuron model has different impact (amplifies current injected) than gain in synapse model (amplifies weights)
         self.params['K'] = 0.
         self.params['fmax'] = 35.       # Cortico-matrisomal synapses, should be set to the max firing rate of the pre and post synaptic populations.
@@ -140,7 +140,7 @@ class global_parameters(ParameterContainer.ParameterContainer):
         ########### SIMULATION PARAMETERS
         self.params['trigger1']= False  # Trigger of some event in the main.py simulation loop, e.g. PD neurodegenerescence
         self.params['trigger2']= False  # Trigger of some event in the main.py simulation loop, e.g. PD neurodegenerescence
-        self.params['block_trigger1'] = 8 # Block in which the event will occur, if self.params['trigger1']
+        self.params['block_trigger1'] = 6 # Block in which the event will occur, if self.params['trigger1']
         self.params['block_trigger2'] = 6 # Block in which the event will occur, if self.params['trigger2']
         self.params['value_trigg_dopa_death'] = 33. # Percentage of dopamine neurons silenced by the disease
 

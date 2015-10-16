@@ -177,9 +177,7 @@ if __name__ == '__main__':
         br_pij = np.empty(params['n_actions'])
         br_eij = np.empty(params['n_actions'])
 
-        #rp_pi = np.zeros(params['n_states'] * params['n_actions'])
         rp_pj = np.zeros(params['n_states'] * params['n_actions'])
-        #rp_pij = np.zeros(params['n_states'] * params['n_actions'])
 
 
 
@@ -203,12 +201,10 @@ if __name__ == '__main__':
     actions = np.empty(params['n_iterations']) 
     states  = np.empty(params['n_iterations']) 
     rewards = np.empty(params['n_iterations']) 
-#    network_states_net= np.zeros((params['n_iterations'], 4))
     block = 0
     BG.set_noise()
     BG.baseline_reward()
-    #BG.set_reward(1)
-    BG.set_gain(0.)
+    #BG.set_gain(0.)
     BG.set_init()
     if comm != None:
         comm.barrier()
@@ -219,7 +215,7 @@ if __name__ == '__main__':
 
     #BG.baseline_reward()
     #BG.set_gain(params['gain'])
-    BG.set_gain(1.)
+    ##BG.set_gain(1.)
     BG.set_noise()
     BG.stop_efference()
 #####   ###################         ###############
@@ -258,7 +254,6 @@ if __name__ == '__main__':
         if comm != None:
             comm.barrier()
         
-       # weights_sim[iteration] = BG.get_weights(BG.states[0], BG.strD1[:])
         states[iteration] = state
         if iteration==0:
             actions[iteration] = utils.communicate_action(comm, params['n_actions'])
@@ -268,7 +263,7 @@ if __name__ == '__main__':
         
         BG.set_efference_copy(actions[iteration])
         #BG.stop_state()
-        BG.set_gain(0.)
+        ##BG.set_gain(0.)
         if comm != None:
             comm.barrier()
         BG.set_rp(states[iteration], actions[iteration], 0., 0.)
