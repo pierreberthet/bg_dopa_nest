@@ -199,6 +199,7 @@ if __name__ == '__main__':
     R = Reward.Reward(params)
 
     actions = np.empty(params['n_iterations']) 
+    actions_bs = np.empty(params['n_iterations']) 
     states  = np.empty(params['n_iterations']) 
     rewards = np.empty(params['n_iterations']) 
     block = 0
@@ -215,7 +216,7 @@ if __name__ == '__main__':
 
     #BG.baseline_reward()
     #BG.set_gain(params['gain'])
-    ##BG.set_gain(1.)
+    BG.set_gain(1.)
     BG.set_noise()
     BG.stop_efference()
 #####   ###################         ###############
@@ -228,17 +229,19 @@ if __name__ == '__main__':
         state = iteration % params['n_states']
 
         if params['trigger1'] and block==params['block_trigger1']:
-            BG.trigger_reduce_pop_dopa(params['value_trigg_dopa_death'])
+            #BG.trigger_reduce_pop_dopa(params['value_trigg_dopa_death'])
             #state = (iteration-1) % params['n_states']
             #block = int ((iteration-1) / params['block_len'])
             #BG.trigger_habit(True)
             #BG.trigger_change_dopa_zero(params['value_trigg_bias'])
             #params['baseline_poisson_rew_rate']= params['new_value']
+            BG.set_gain(0.)
             params['trigger1'] = False
 
              
         if params['trigger2'] and block==params['block_trigger2']:
-            BG.trigger_habit(False)
+            #BG.trigger_habit(False)
+            BG.set_gain(1.)
             params['trigger2'] = False
 
 #        state = utils.communicate_state(comm, params['n_states']) 
@@ -257,9 +260,11 @@ if __name__ == '__main__':
         states[iteration] = state
         if iteration==0:
             actions[iteration] = utils.communicate_action(comm, params['n_actions'])
+            actions_bs[iteration] = 0.
             BG.t_current += params['t_iteration']
         else:
             actions[iteration] = BG.get_action() # BG returns the selected action
+            actions_bs[iteration] = BG.get_action_bs() # Habit returns the selected action
         
         BG.set_efference_copy(actions[iteration])
         #BG.stop_state()
@@ -280,7 +285,7 @@ if __name__ == '__main__':
         if params['delay']:
             BG.stop_efference()
             BG.set_rest()
-            BG.set_gain(1.)
+            #BG.set_gain(1.)
 
         if params['light_record']:
             dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp = mynest_light.Simulate(params['t_delay'], params['resolution'], params['n_actions'], params['n_states'], BG, dopa_kf, dopa_k, dopa_m, dopa_n, list_d1, list_d2, list_br, list_rp, comm)
@@ -322,8 +327,8 @@ if __name__ == '__main__':
 
         ###BG.set_rp(states[iteration], actions[iteration], 0., 0. )
         #BG.set_gain(params['gain'])
-        if not(params['delay']):
-            BG.set_gain(1.)
+       # if not(params['delay']):
+       #     BG.set_gain(1.)
       #  BG.set_kappa_OFF()
         BG.set_rest()
         if comm != None:
@@ -341,19 +346,21 @@ if __name__ == '__main__':
 ### ########################################
     # END of SIMULATION LOOP
 ### ########################################
-    print 'NEST simulation done for thead ', pc_id, ' process ', counter
+    print 'NEST simulation done for thread ', pc_id, ' process ', counter
     if pc_id == 0:
         np.savetxt(params['weights_d1_multi_fn']+'_'+str(counter) , list_d1[0])
         np.savetxt(params['weights_d2_multi_fn']+'_'+str(counter) , list_d2[0])
         np.savetxt(params['weights_rp_multi_fn']+'_'+str(counter) , list_rp[0])
+        np.savetxt(params['weights_habit_multi_fn']+'_'+str(counter) , list_br[5])
         np.savetxt(params['rewards_multi_fn']+'_'+str(counter) , rewards)
+        np.savetxt(params['actions_taken_fn']+'_'+str(counter), actions)
+        np.savetxt(params['actions_bs_fn']+'_'+str(counter), actions_bs)
 
 
     if params['record_spikes']:
         if counter == 0:
             if pc_id == 0:
                 binsize = params['binsize_histo_raster']
-                np.savetxt(params['actions_taken_fn'], actions)
                 np.savetxt(params['states_fn'], states)
                 np.savetxt(params['rewards_fn'], rewards)
                 exc_sptimes = nest.GetStatus(BG.recorder_d1[0])[0]['events']['times']
@@ -728,13 +735,15 @@ if __name__ == '__main__':
             pl.savefig('fig89_brainstem.pdf')
         else:
             pl.figure(89)
-            pl.plot(list_br[4], label='w0')
+            #pl.plot(list_br[4], label='w0')
             pl.plot(list_br[5], label='w1')
-            pl.plot(list_br[6], label='w2')
-            pl.title('Brainstem weights from state 0')
+            #pl.plot(list_br[6], label='w2')
+            pl.title('Brainstem weights from state 1')
             pl.xlabel('trials')
-            pl.legend()
+            #pl.legend()
+            pl.tight_layout()
             pl.savefig('fig89_brainstem.pdf')
+            pl.savefig('fig89_brainstem.png')
 
    # if pc_id == 0:
    #     for i_proc in xrange(1,n_proc ):

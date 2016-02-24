@@ -4,7 +4,7 @@ rm error_file.e
 rm delme_output_*
 
 N=$1
-var1=40
+var1=50
 COUNTER=0
 
 # DO NOT FORGET TO CHANGE WALLTIME in call file

@@ -386,6 +386,8 @@ class BasalGanglia(object):
 
         self.first_action_gid = np.min(self.gpi[0]) - 1
         self.last_action_gid = np.max(self.gpi[self.params['n_actions']-1])
+        self.first_action_bs_gid = np.min(self.brainstem[0]) - 1
+        self.last_action_bs_gid = np.max(self.brainstem[self.params['n_actions']-1])
 
     # #####################
  	# GETCONNECTIONS
@@ -399,12 +401,16 @@ class BasalGanglia(object):
 	self.conn_habit1 = []
 	self.conn_habit2 = []
 	self.conn_rp = [] 
+
+
 	for i in xrange(self.params['n_actions']):
-	    self.conn_d1.append(nest.GetConnections(self.states[self.who], self.strD1[i], synapse_model='bcpnn_dopamine_synapse_d1' ))
-	    self.conn_d2.append(nest.GetConnections(self.states[self.who], self.strD2[i], synapse_model='bcpnn_dopamine_synapse_d2' ))
-	    self.conn_habit0.append(nest.GetConnections(self.states[0], self.brainstem[i], synapse_model='bcpnn_synapse' ))
-	    self.conn_habit1.append(nest.GetConnections(self.states[1], self.brainstem[i], synapse_model='bcpnn_synapse' ))
-	    self.conn_habit2.append(nest.GetConnections(self.states[2], self.brainstem[i], synapse_model='bcpnn_synapse' ))
+            self.conn_d1.append(nest.GetConnections(self.states[self.who], self.strD1[i], synapse_model='bcpnn_dopamine_synapse_d1' ))
+            self.conn_d2.append(nest.GetConnections(self.states[self.who], self.strD2[i], synapse_model='bcpnn_dopamine_synapse_d2' ))
+           # self.conn_d1.append(nest.GetConnections(self.states[i], self.strD1[self.who], synapse_model='bcpnn_dopamine_synapse_d1' ))
+           # self.conn_d2.append(nest.GetConnections(self.states[i], self.strD2[self.who], synapse_model='bcpnn_dopamine_synapse_d2' ))
+    	    self.conn_habit0.append(nest.GetConnections(self.states[0], self.brainstem[i], synapse_model='bcpnn_synapse' ))
+    	    self.conn_habit1.append(nest.GetConnections(self.states[1], self.brainstem[i], synapse_model='bcpnn_synapse' ))
+    	    self.conn_habit2.append(nest.GetConnections(self.states[2], self.brainstem[i], synapse_model='bcpnn_synapse' ))
 	for j in xrange(self.params['n_actions']*self.params['n_states']):
 	    self.conn_rp.append( nest.GetConnections(self.rp[j], self.rew, synapse_model='bcpnn_dopa_synapse_RP')  )
 
@@ -610,8 +616,45 @@ class BasalGanglia(object):
                 #winning_action = self.recorder_gpi_gidkey[winning_gid+1]
                 winning_action = np.argmin(results[0])
         print 'BG says (it %d, pc_id %d): do action %d' % (self.t_current / self.params['t_iteration'], self.pc_id, winning_action)
+        #self.t_current += self.params['t_iteration']
+        return (winning_action)
+
+
+    def get_action_bs(self):
+        """
+        Returns the action promoted by Brainstem
+        """
+        new_event_gids = np.array([])
+        for i_, recorder in enumerate(self.recorder_brainstem.values()):
+            all_events = nest.GetStatus(recorder)[0]['events']
+            recent_event_idx = all_events['times'] > self.t_current
+            if recent_event_idx.size > 0:
+                new_event_gids = np.r_[new_event_gids, all_events['senders'][recent_event_idx]]
+        if self.comm != None:
+            gids_spiked, nspikes = utils.communicate_local_spikes(new_event_gids, self.comm)
+        else:
+            gids_spiked = new_event_gids.unique() - 1
+            nspikes = np.zeros(len(new_event_gids))
+            for i_, gid in enumerate(new_event_gids):
+                nspikes[i_] = (new_event_gids == gid).nonzero()[0].size
+        if sum(nspikes)==0:
+            print '*******no spikes BS*******'
+            winning_action = utils.communicate_action(self.comm, self.params['n_actions'])
+        else:    
+            #print 'gids_spiked ', gids_spiked
+            #print 'nspikes ', nspikes
+            all_actions_gids = np.arange(self.first_action_bs_gid, self.last_action_bs_gid)
+            all_spikes = np.zeros(self.last_action_bs_gid-self.first_action_bs_gid)
+            for gid in gids_spiked:
+                all_spikes[all_actions_gids==gid] = nspikes[gids_spiked==gid]
+        #    results = np.histogram(gids_spiked, bins=self.params['n_actions'], weights = nspikes)
+        #    print 'results_histo_1 ', results
+            results = np.histogram(all_actions_gids, bins=self.params['n_actions'], weights = all_spikes)
+            winning_action = np.argmax(results[0])
+        print 'Brainstem says (it %d, pc_id %d): do action %d' % (self.t_current / self.params['t_iteration'], self.pc_id, winning_action)
         self.t_current += self.params['t_iteration']
         return (winning_action)
+
 
     def set_reward(self, rew):
     # absolute value of the reward
